@@ -72,6 +72,61 @@
             color: #2563eb; /* text-blue-600 */
             transform: scale(1.2) rotate(-15deg);
         }
+
+        /* Compass Tool Styles */
+        .compass-control-btn {
+            background-color: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            background-clip: padding-box;
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .compass-control-btn:hover {
+            background-color: #f3f4f6;
+        }
+        .compass-control-btn.active {
+            background-color: #2563eb;
+            color: white;
+            border-color: #1d4ed8;
+        }
+        
+        /* Ruler Tool Styles */
+        .ruler-control-btn {
+            background-color: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            background-clip: padding-box;
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .ruler-control-btn:hover {
+            background-color: #f3f4f6;
+        }
+        .ruler-control-btn.active {
+            background-color: #10b981;
+            color: white;
+            border-color: #059669;
+        }
+        
+        /* Forces crosshair when measuring */
+        .crosshair-cursor-map {
+            cursor: crosshair !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -141,11 +196,93 @@
         Copied to clipboard!
     </div>
 
+    <!-- Context Menu -->
+    <div id="context-menu" class="absolute hidden bg-white shadow-xl rounded-lg py-2 border border-gray-200 z-[3000] min-w-[150px]">
+        <button id="cm-holding-point" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+            ➕ Add Holding Point
+        </button>
+        <button id="cm-draw-hold" class="w-full text-left px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 transition-colors border-b border-gray-100">
+            ✏️ Draw Holding Point
+        </button>
+        <button id="cm-delete-point" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+            🗑️ Delete Waypoint
+        </button>
+    </div>
+
+    <!-- Draw Shape Dialog -->
+    <div id="draw-shape-dialog" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-2xl p-6 border border-gray-200 z-[4000] hidden w-[90%] sm:w-80 max-w-sm">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-xl font-bold text-gray-900">Interactive Hold</h3>
+            <button id="draw-close-icon" class="text-gray-400 hover:text-gray-600 transition-colors bg-transparent border-0 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="space-y-3">
+            <button class="w-full shape-btn text-left px-4 py-3 border border-gray-200 rounded-xl hover:bg-orange-50 hover:border-orange-300 font-semibold text-gray-700 transition-colors" data-shape="capsule">Capsule (Racetrack)</button>
+            <button class="w-full shape-btn text-left px-4 py-3 border border-gray-200 rounded-xl hover:bg-orange-50 hover:border-orange-300 font-semibold text-gray-700 transition-colors" data-shape="circle">Circle</button>
+            <button class="w-full shape-btn text-left px-4 py-3 border border-gray-200 rounded-xl hover:bg-orange-50 hover:border-orange-300 font-semibold text-gray-700 transition-colors" data-shape="figure8">Figure 8 (Hourglass)</button>
+        </div>
+    </div>
+
+    <!-- Holding Point Dialog -->
+    <div id="holding-dialog" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-2xl p-6 border border-gray-200 z-[4000] hidden w-[90%] sm:w-96 max-w-md">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-xl font-bold text-gray-900">Holding Pattern</h3>
+            <button id="hold-close-icon" class="text-gray-400 hover:text-gray-600 transition-colors bg-transparent border-0 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pattern Shape</label>
+                <select id="hold-shape" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-50 text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm">
+                    <option value="capsule">Capsule (NASCAR/Racetrack)</option>
+                    <option value="circle">Circle</option>
+                    <option value="figure8">Figure 8 (Hourglass)</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5" title="Number of waypoints to draw the shape">Points</label>
+                    <input type="number" id="hold-points" min="10" max="200" value="40" class="w-full border border-gray-300 rounded-xl p-2.5 bg-gray-50 text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Distance (Miles)</label>
+                    <input type="number" id="hold-dist" min="0.1" step="0.1" max="1000" value="10" class="w-full border border-gray-300 rounded-xl p-2.5 bg-gray-50 text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Loops</label>
+                    <input type="number" id="hold-loops" min="1" max="20" value="1" class="w-full border border-gray-300 rounded-xl p-2.5 bg-gray-50 text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Heading (°)</label>
+                    <input type="number" id="hold-angle" min="0" max="359" value="90" class="w-full border border-gray-300 rounded-xl p-2.5 bg-gray-50 text-gray-800 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm">
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-3 mt-2 border-t border-gray-100">
+                <button id="hold-cancel" class="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">Cancel</button>
+                <button id="hold-generate" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm">Generate</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
+        // UI Elements setup ...
+        const routeOutput = document.getElementById('route-output');
+        const statsBadge = document.getElementById('stats-badge');
+        const undoBtn = document.getElementById('undo-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const toast = document.getElementById('toast');
         
+        let activeWaypointIndex = -1; // Tracks right-clicked waypoint
+
         // Application State
         let waypoints = []; // Stores L.LatLng objects
         let markers = [];   // Stores Leaflet Marker objects
@@ -161,11 +298,37 @@
             position: 'topright'
         }).addTo(map);
 
-        // Add a clean, light-themed tile layer (CartoDB Positron)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        // Define multiple base map layers
+        const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
             subdomains: 'abcd'
-        }).addTo(map);
+        });
+        
+        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: 'Tiles &copy; Esri'
+        });
+        
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        });
+        
+        const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            subdomains: 'abcd'
+        });
+
+        // Add default layer
+        positron.addTo(map);
+
+        // Add Layer Control to switch maps
+        const baseMaps = {
+            "Light Mode (Default)": positron,
+            "Satellite Imagery": satellite,
+            "Standard Map": osm,
+            "Dark Mode": dark
+        };
+        L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
         // Initialize Polyline (the flight path line)
         routePolyline = L.polyline([], {
@@ -328,16 +491,6 @@
             return latStr + lngStr;
         }
 
-
-
-        // UI Elements
-        const routeOutput = document.getElementById('route-output');
-        const statsBadge = document.getElementById('stats-badge');
-        const undoBtn = document.getElementById('undo-btn');
-        const clearBtn = document.getElementById('clear-btn');
-        const copyBtn = document.getElementById('copy-btn');
-        const toast = document.getElementById('toast');
-
         /**
          * Updates the text input, badge, and button states based on current waypoints.
          */
@@ -359,33 +512,412 @@
         }
 
         /**
+         * Re-renders all markers and the polyline on the map from the waypoints array.
+         * This ensures indexes are always correct after additions, deletions, or injecting holds.
+         */
+        function renderRoute() {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Rebuild markers
+            waypoints.forEach((wp, i) => {
+                const customIcon = L.divIcon({
+                    className: 'custom-div-icon', // Container class
+                    html: `<div class="waypoint-marker">${i + 1}</div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14] // Anchor at the center of the circle
+                });
+
+                const marker = L.marker(wp, { icon: customIcon }).addTo(map);
+                
+                // Add right-click context menu
+                marker.on('contextmenu', (e) => {
+                    L.DomEvent.stopPropagation(e);
+                    e.originalEvent.preventDefault(); // Prevent default browser menu
+                    activeWaypointIndex = i;
+                    const cm = document.getElementById('context-menu');
+                    cm.style.left = e.originalEvent.pageX + 'px';
+                    cm.style.top = e.originalEvent.pageY + 'px';
+                    cm.classList.remove('hidden');
+                });
+                
+                markers.push(marker);
+            });
+
+            // Update polyline
+            routePolyline.setLatLngs(waypoints);
+            updateUI();
+        }
+
+        /**
          * Adds a new waypoint to the map and updates data structures.
          */
         function addWaypoint(latlng) {
             waypoints.push(latlng);
-            const index = waypoints.length;
+            renderRoute();
+        }
 
-            // Create custom HTML marker icon
-            const customIcon = L.divIcon({
-                className: 'custom-div-icon', // Container class
-                html: `<div class="waypoint-marker">${index}</div>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14] // Anchor at the center of the circle
-            });
+        // Interactive Drawing State Variables
+        let isDrawingHold = false;
+        let drawHoldParams = { shape: 'capsule', dist: 10, angle: 90, loops: 1, points: 40 };
+        let drawHoldActiveIndex = -1;
+        let lastMouseLatLng = null;
 
-            // Add marker to map
-            const marker = L.marker(latlng, { icon: customIcon }).addTo(map);
-            markers.push(marker);
+        const rotateIncrements = [5, 1, 0.5];
+        let currentRotateIdx = 0; // Starts at 5°
 
-            // Update polyline
-            routePolyline.setLatLngs(waypoints);
+        const scaleIncrements = [0.1, 1, 10];
+        let currentScaleIdx = 1; // Starts at 1mi
 
-            updateUI();
+        let ghostHoldLine = L.polyline([], {color: '#f97316', weight: 3, dashArray: '5, 5'}).addTo(map);
+
+        const drawTooltip = L.tooltip({
+            permanent: true,
+            direction: 'right',
+            className: 'font-bold text-orange-600 bg-white px-2 py-1 rounded shadow-md border border-orange-200 text-sm'
+        });
+        
+        let drawTooltipMarker = L.marker([0,0], {
+            icon: L.divIcon({className: 'hidden'}),
+            interactive: false
+        }).addTo(map);
+
+        function exitDrawMode() {
+            isDrawingHold = false;
+            document.getElementById('map').classList.remove('crosshair-cursor-map');
+            ghostHoldLine.setLatLngs([]);
+            drawTooltipMarker.unbindTooltip();
+            
+            const drawUi = document.querySelector('.draw-tool-ui');
+            if (drawUi) {
+                drawUi.classList.add('hidden');
+                drawUi.classList.remove('flex');
+            }
+            
+            showNotification("Exited Drawing Mode", 2000);
         }
 
         // Map Click Listener
         map.on('click', function(e) {
-            addWaypoint(e.latlng);
+            if (isDrawingHold) {
+                const pts = generateHoldPoints(e.latlng, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, drawHoldParams.loops, drawHoldParams.angle);
+                waypoints.splice(drawHoldActiveIndex + 1, 0, ...pts);
+                renderRoute();
+                exitDrawMode();
+            } else if (compassActive) {
+                handleCompassMapClick(e);
+            } else if (rulerActive) {
+                handleRulerMapClick(e);
+            } else {
+                addWaypoint(e.latlng);
+            }
+        });
+
+        let compassActive = false;
+        let compassStart = null;
+        let compassLine = L.polyline([], {color: '#ef4444', weight: 3, dashArray: '5, 5'}).addTo(map);
+        
+        const headingTooltip = L.tooltip({
+            permanent: true,
+            direction: 'right',
+            className: 'font-bold text-red-600 bg-white px-2 py-1 rounded shadow-md border border-red-200 text-sm'
+        });
+        
+        // Invisible marker used purely to carry the tooltip near the cursor
+        let compassTooltipMarker = L.marker([0,0], {
+            icon: L.divIcon({className: 'hidden'}),
+            interactive: false
+        }).addTo(map);
+
+        // Custom Leaflet Control for the Compass Button
+        const CompassControl = L.Control.extend({
+            options: { position: 'topright' },
+            onAdd: function() {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                const btn = L.DomUtil.create('a', 'compass-control-btn', container);
+                btn.innerHTML = '🧭';
+                btn.title = 'Measure Compass Heading';
+                btn.href = '#';
+                
+                L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+                L.DomEvent.on(btn, 'click', (e) => {
+                    e.preventDefault();
+                    toggleCompassMode(btn);
+                });
+                return container;
+            }
+        });
+        map.addControl(new CompassControl());
+
+        function toggleCompassMode(btn) {
+            // Turn off ruler if active
+            if (rulerActive) {
+                const rulerBtn = document.querySelector('.ruler-control-btn');
+                if(rulerBtn) toggleRulerMode(rulerBtn);
+            }
+            
+            compassActive = !compassActive;
+            const mapContainer = document.getElementById('map');
+            
+            if (compassActive) {
+                btn.classList.add('active');
+                mapContainer.classList.add('crosshair-cursor-map');
+                showNotification("Compass Active: Click map to set origin.", 3000);
+            } else {
+                btn.classList.remove('active');
+                mapContainer.classList.remove('crosshair-cursor-map');
+                compassStart = null;
+                compassLine.setLatLngs([]);
+                compassTooltipMarker.unbindTooltip();
+                showNotification("Compass Deactivated.", 2000);
+            }
+        }
+
+        function handleCompassMapClick(e) {
+            if (!compassStart) {
+                // First click sets the origin anchor
+                compassStart = e.latlng;
+                compassLine.setLatLngs([compassStart, compassStart]);
+                compassTooltipMarker.setLatLng(compassStart);
+                compassTooltipMarker.bindTooltip(headingTooltip).openTooltip();
+                compassTooltipMarker.setTooltipContent('0°');
+            } else {
+                // Second click clears it to start a new measurement
+                compassStart = null;
+                compassLine.setLatLngs([]);
+                compassTooltipMarker.unbindTooltip();
+            }
+        }
+
+        // Calculate standard compass bearing (heading) between two coordinates
+        function calculateBearing(latlng1, latlng2) {
+            const toRad = Math.PI / 180;
+            const toDeg = 180 / Math.PI;
+            const lat1 = latlng1.lat * toRad;
+            const lat2 = latlng2.lat * toRad;
+            const dLon = (latlng2.lng - latlng1.lng) * toRad;
+
+            const y = Math.sin(dLon) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+            let brng = Math.atan2(y, x) * toDeg;
+            return (brng + 360) % 360; // Normalize 0-360
+        }
+        
+        // Custom Leaflet Control for the Ruler Button
+        let rulerActive = false;
+        let rulerStart = null;
+        let rulerLine = L.polyline([], {color: '#10b981', weight: 3, dashArray: '5, 5'}).addTo(map);
+        
+        const distanceTooltip = L.tooltip({
+            permanent: true,
+            direction: 'right',
+            className: 'font-bold text-green-700 bg-white px-2 py-1 rounded shadow-md border border-green-200 text-sm'
+        });
+        
+        let rulerTooltipMarker = L.marker([0,0], {
+            icon: L.divIcon({className: 'hidden'}),
+            interactive: false
+        }).addTo(map);
+
+        const RulerControl = L.Control.extend({
+            options: { position: 'topright' },
+            onAdd: function() {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                const btn = L.DomUtil.create('a', 'ruler-control-btn', container);
+                btn.innerHTML = '📏';
+                btn.title = 'Measure Distance';
+                btn.href = '#';
+                
+                L.DomEvent.on(btn, 'click', L.DomEvent.stop);
+                L.DomEvent.on(btn, 'click', (e) => {
+                    e.preventDefault();
+                    toggleRulerMode(btn);
+                });
+                return container;
+            }
+        });
+        map.addControl(new RulerControl());
+
+        // --- NEW DRAWING TOOLS CONTROL ---
+        const DrawToolsControl = L.Control.extend({
+            options: { position: 'topright' },
+            onAdd: function() {
+                // Initial container hidden. Will be switched to 'flex' when drawing
+                const container = L.DomUtil.create('div', 'draw-tool-ui hidden flex-col gap-2 mt-2 mr-2.5');
+                
+                // Rotate Increment Toggle Button
+                const rotBtn = L.DomUtil.create('button', 'compass-control-btn', container);
+                rotBtn.innerHTML = `⟳ ${rotateIncrements[currentRotateIdx]}°`;
+                rotBtn.title = 'Click to change rotation increment';
+                rotBtn.style.color = '#ea580c'; // Orange to match drawing theme
+                rotBtn.style.borderColor = '#ea580c';
+                rotBtn.style.width = '48px';
+                rotBtn.style.fontSize = '12px';
+                rotBtn.style.fontWeight = 'bold';
+
+                // Scale Increment Toggle Button
+                const scaleBtn = L.DomUtil.create('button', 'compass-control-btn', container);
+                scaleBtn.innerHTML = `⤢ ${scaleIncrements[currentScaleIdx]}mi`;
+                scaleBtn.title = 'Click to change scale increment';
+                scaleBtn.style.color = '#ea580c';
+                scaleBtn.style.borderColor = '#ea580c';
+                scaleBtn.style.width = '48px';
+                scaleBtn.style.fontSize = '12px';
+                scaleBtn.style.fontWeight = 'bold';
+
+                // Prevent map clicks when clicking the tools
+                L.DomEvent.disableClickPropagation(container);
+                
+                // Click events to cycle increments
+                L.DomEvent.on(rotBtn, 'click', (e) => {
+                    e.preventDefault();
+                    currentRotateIdx = (currentRotateIdx + 1) % rotateIncrements.length;
+                    rotBtn.innerHTML = `⟳ ${rotateIncrements[currentRotateIdx]}°`;
+                });
+
+                L.DomEvent.on(scaleBtn, 'click', (e) => {
+                    e.preventDefault();
+                    currentScaleIdx = (currentScaleIdx + 1) % scaleIncrements.length;
+                    const val = scaleIncrements[currentScaleIdx];
+                    scaleBtn.innerHTML = `⤢ ${val}mi`;
+                });
+
+                return container;
+            }
+        });
+        map.addControl(new DrawToolsControl());
+
+        function toggleRulerMode(btn) {
+            // Turn off compass if active
+            if (compassActive) {
+                const compassBtn = document.querySelector('.compass-control-btn');
+                if(compassBtn) toggleCompassMode(compassBtn);
+            }
+
+            rulerActive = !rulerActive;
+            const mapContainer = document.getElementById('map');
+            
+            if (rulerActive) {
+                btn.classList.add('active');
+                mapContainer.classList.add('crosshair-cursor-map');
+                showNotification("Ruler Active: Click map to set origin.", 3000);
+            } else {
+                btn.classList.remove('active');
+                mapContainer.classList.remove('crosshair-cursor-map');
+                rulerStart = null;
+                rulerLine.setLatLngs([]);
+                rulerTooltipMarker.unbindTooltip();
+                showNotification("Ruler Deactivated.", 2000);
+            }
+        }
+
+        function handleRulerMapClick(e) {
+            if (!rulerStart) {
+                // First click sets the origin anchor
+                rulerStart = e.latlng;
+                rulerLine.setLatLngs([rulerStart, rulerStart]);
+                rulerTooltipMarker.setLatLng(rulerStart);
+                rulerTooltipMarker.bindTooltip(distanceTooltip).openTooltip();
+                rulerTooltipMarker.setTooltipContent('0 mi');
+            } else {
+                // Second click clears it to start a new measurement
+                rulerStart = null;
+                rulerLine.setLatLngs([]);
+                rulerTooltipMarker.unbindTooltip();
+            }
+        }
+
+        map.on('mousemove', function(e) {
+            if (compassActive && compassStart) {
+                // Draw line from start anchor to current mouse pos
+                compassLine.setLatLngs([compassStart, e.latlng]);
+                
+                // Calculate and display heading
+                const bearing = calculateBearing(compassStart, e.latlng);
+                
+                compassTooltipMarker.setLatLng(e.latlng);
+                if(!compassTooltipMarker.getTooltip()) {
+                    compassTooltipMarker.bindTooltip(headingTooltip).openTooltip();
+                }
+                compassTooltipMarker.setTooltipContent(`${Math.round(bearing)}°`);
+            }
+
+            if (rulerActive && rulerStart) {
+                // Draw line from start anchor to current mouse pos
+                rulerLine.setLatLngs([rulerStart, e.latlng]);
+                
+                // Calculate and display distance in miles
+                // Leaflet's distanceTo() returns meters. Multiply by 0.000621371 to get miles.
+                const distanceMeters = rulerStart.distanceTo(e.latlng);
+                const distanceMiles = distanceMeters * 0.000621371;
+                
+                rulerTooltipMarker.setLatLng(e.latlng);
+                if(!rulerTooltipMarker.getTooltip()) {
+                    rulerTooltipMarker.bindTooltip(distanceTooltip).openTooltip();
+                }
+                rulerTooltipMarker.setTooltipContent(`${distanceMiles.toFixed(1)} mi`);
+            }
+            
+            // Track mouse globally and update interactive holding pattern
+            lastMouseLatLng = e.latlng;
+            if (isDrawingHold) {
+                const pts = generateHoldPoints(lastMouseLatLng, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, drawHoldParams.loops, drawHoldParams.angle);
+                ghostHoldLine.setLatLngs(pts);
+                
+                drawTooltipMarker.setLatLng(lastMouseLatLng);
+                if(!drawTooltipMarker.getTooltip()) {
+                    drawTooltipMarker.bindTooltip(drawTooltip).openTooltip();
+                }
+                
+                const fmtAngle = drawHoldParams.angle % 1 === 0 ? drawHoldParams.angle : drawHoldParams.angle.toFixed(1);
+                const fmtDist = drawHoldParams.dist % 1 === 0 ? drawHoldParams.dist : drawHoldParams.dist.toFixed(1);
+                
+                drawTooltipMarker.setTooltipContent(`${fmtDist} mi | ${fmtAngle}°`);
+            }
+        });
+
+        // Wheel event for rotating and scaling interactive hold
+        document.getElementById('map').addEventListener('wheel', (e) => {
+            if (!isDrawingHold) return;
+            
+            // Allow native map zooming if Shift is held
+            if (e.shiftKey) return; 
+
+            // Otherwise intercept for our drawing tools
+            e.preventDefault(); // Prevent native browser zoom/scroll
+            e.stopPropagation(); // Stop Leaflet from seeing it and zooming the map
+            
+            if (e.ctrlKey) {
+                // Scale distance using selected increment
+                const scaleInc = scaleIncrements[currentScaleIdx];
+                drawHoldParams.dist += e.deltaY < 0 ? scaleInc : -scaleInc;
+                drawHoldParams.dist = Math.max(0.1, drawHoldParams.dist);
+            } else {
+                // Rotate angle using selected increment
+                const rotInc = rotateIncrements[currentRotateIdx];
+                drawHoldParams.angle += e.deltaY < 0 ? rotInc : -rotInc;
+                drawHoldParams.angle = (drawHoldParams.angle + 360) % 360;
+            }
+            
+            // Re-render ghost immediately
+            if (lastMouseLatLng) {
+                const pts = generateHoldPoints(lastMouseLatLng, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, drawHoldParams.loops, drawHoldParams.angle);
+                ghostHoldLine.setLatLngs(pts);
+                
+                const fmtAngle = drawHoldParams.angle % 1 === 0 ? drawHoldParams.angle : drawHoldParams.angle.toFixed(1);
+                const fmtDist = drawHoldParams.dist % 1 === 0 ? drawHoldParams.dist : drawHoldParams.dist.toFixed(1);
+                
+                drawTooltipMarker.setTooltipContent(`${fmtDist} mi | ${fmtAngle}°`);
+            }
+        }, { passive: false, capture: true });
+
+        // Cancel with Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isDrawingHold) {
+                exitDrawMode();
+            }
         });
 
         const searchInput = document.getElementById('airport-search');
@@ -459,33 +991,15 @@
         // Undo Button Logic
         undoBtn.addEventListener('click', () => {
             if (waypoints.length === 0) return;
-
-            // Remove from data arrays
             waypoints.pop();
-            const lastMarker = markers.pop();
-
-            // Remove marker from map
-            map.removeLayer(lastMarker);
-
-            // Update line and UI
-            routePolyline.setLatLngs(waypoints);
-            updateUI();
+            renderRoute();
         });
 
         // Clear All Button Logic
         clearBtn.addEventListener('click', () => {
             if (waypoints.length === 0) return;
-
-            // Remove all markers from map
-            markers.forEach(marker => map.removeLayer(marker));
-            
-            // Reset arrays
             waypoints = [];
-            markers = [];
-
-            // Reset line and UI
-            routePolyline.setLatLngs(waypoints);
-            updateUI();
+            renderRoute();
         });
 
         // Copy Route String Logic
@@ -518,6 +1032,180 @@
                 toast.style.opacity = '0';
             }, duration);
         }
+
+        /* -------------------------------------------------------------
+           Context Menu & Holding Point Generation Logic
+           ------------------------------------------------------------- */
+        
+        const contextMenu = document.getElementById('context-menu');
+        const holdDialog = document.getElementById('holding-dialog');
+        
+        // Hide context menu when clicking anywhere else
+        map.on('click', () => contextMenu.classList.add('hidden'));
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.waypoint-marker') && !contextMenu.contains(e.target)) {
+                contextMenu.classList.add('hidden');
+            }
+        });
+
+        // Show holding point dialog
+        document.getElementById('cm-holding-point').addEventListener('click', () => {
+            contextMenu.classList.add('hidden');
+            holdDialog.classList.remove('hidden');
+        });
+
+        // Show interactive drawing dialog
+        const drawShapeDialog = document.getElementById('draw-shape-dialog');
+        
+        document.getElementById('cm-draw-hold').addEventListener('click', () => {
+            contextMenu.classList.add('hidden');
+            drawShapeDialog.classList.remove('hidden');
+            drawHoldActiveIndex = activeWaypointIndex;
+        });
+
+        document.getElementById('draw-close-icon').addEventListener('click', () => {
+            drawShapeDialog.classList.add('hidden');
+            drawHoldActiveIndex = -1;
+        });
+
+        document.querySelectorAll('.shape-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                drawHoldParams.shape = e.target.getAttribute('data-shape');
+                drawShapeDialog.classList.add('hidden');
+                
+                // Enter interactive drawing mode
+                isDrawingHold = true;
+                document.getElementById('map').classList.add('crosshair-cursor-map');
+                
+                // Show increment toggles
+                const drawUi = document.querySelector('.draw-tool-ui');
+                if (drawUi) {
+                    drawUi.classList.remove('hidden');
+                    drawUi.classList.add('flex');
+                }
+
+                showNotification("Scroll to Rotate. Ctrl+Scroll: Scale. Shift+Scroll: Zoom.", 6000);
+            });
+        });
+        
+        // Delete a specific point
+        document.getElementById('cm-delete-point').addEventListener('click', () => {
+            contextMenu.classList.add('hidden');
+            if(activeWaypointIndex > -1) {
+                waypoints.splice(activeWaypointIndex, 1);
+                renderRoute();
+            }
+        });
+
+        // Close Dialog
+        document.getElementById('hold-cancel').addEventListener('click', () => {
+            holdDialog.classList.add('hidden');
+            activeWaypointIndex = -1;
+        });
+
+        // Close Dialog via X icon
+        document.getElementById('hold-close-icon').addEventListener('click', () => {
+            holdDialog.classList.add('hidden');
+            activeWaypointIndex = -1;
+        });
+
+        // Extracted math function for generating hold shapes
+        function generateHoldPoints(anchor, shape, P, D, L_loops, userAngle) {
+            const rotRad = (90 - userAngle) * (Math.PI / 180);
+            const newPoints = [];
+            
+            // 1 degree of latitude is exactly ~69.05 miles.
+            const milesToDeg = 1 / 69.05;
+            
+            let R = 0; 
+            let W = 0; 
+            
+            if (shape === 'capsule') {
+                W = D * milesToDeg;        
+                R = (D * 0.3) * milesToDeg; 
+            } else if (shape === 'circle') {
+                R = (D / 2) * milesToDeg;  
+            }
+            
+            const latCos = Math.cos(anchor.lat * Math.PI / 180);
+            const lngScale = latCos === 0 ? 1 : 1 / latCos;
+            
+            const len1 = W; 
+            const len2 = Math.PI * R; 
+            const len3 = W; 
+            const len4 = Math.PI * R; 
+            
+            const S1 = len1;
+            const S2 = S1 + len2;
+            const S3 = S2 + len3;
+            const S4 = S3 + len4;
+            const totalS = S4;
+            
+            for(let loop = 0; loop < L_loops; loop++) {
+                for(let i = 1; i <= P; i++) { 
+                    let dy = 0, dx = 0;
+                    
+                    if (shape === 'figure8') {
+                        const t = (i / P) * 2 * Math.PI;
+                        dx = (D / 2) * milesToDeg * Math.sin(t);
+                        dy = (D / 2) * milesToDeg * Math.sin(t) * Math.cos(t) * 2; 
+                    } else {
+                        const d = (i / P) * totalS;
+                        
+                        if (d <= S1) {
+                            const p = S1 === 0 ? 0 : d / S1;
+                            dx = p * W;
+                            dy = 0;
+                        } else if (d <= S2) {
+                            const p = (d - S1) / len2;
+                            const theta = -Math.PI/2 + p * Math.PI;
+                            dx = W + R * Math.cos(theta);
+                            dy = R + R * Math.sin(theta);
+                        } else if (d <= S3) {
+                            const p = len3 === 0 ? 0 : (d - S2) / len3;
+                            dx = W - p * W;
+                            dy = 2 * R;
+                        } else {
+                            const p = (d - S3) / len4;
+                            const theta = Math.PI/2 + p * Math.PI;
+                            dx = R * Math.cos(theta);
+                            dy = R + R * Math.sin(theta);
+                        }
+                    }
+                    
+                    const dxRot = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
+                    const dyRot = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+                    
+                    const pt = L.latLng(
+                        anchor.lat + dyRot, 
+                        anchor.lng + (dxRot * lngScale)
+                    );
+                    newPoints.push(pt);
+                }
+            }
+            return newPoints;
+        }
+
+        // Generate Holding Pattern
+        document.getElementById('hold-generate').addEventListener('click', () => {
+            if(activeWaypointIndex === -1) return;
+            
+            const shape = document.getElementById('hold-shape').value;
+            const P = parseInt(document.getElementById('hold-points').value);
+            const D = parseFloat(document.getElementById('hold-dist').value);
+            const L_loops = parseInt(document.getElementById('hold-loops').value);
+            const userAngle = parseInt(document.getElementById('hold-angle').value);
+            
+            const anchor = waypoints[activeWaypointIndex];
+            const newPoints = generateHoldPoints(anchor, shape, P, D, L_loops, userAngle);
+            
+            // Insert pattern points into the route immediately after the clicked waypoint
+            waypoints.splice(activeWaypointIndex + 1, 0, ...newPoints);
+            renderRoute();
+            
+            holdDialog.classList.add('hidden');
+            activeWaypointIndex = -1;
+        });
 
         // Fetch airports now that UI elements are initialized
         fetchAirports();
