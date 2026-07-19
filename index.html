@@ -20,7 +20,7 @@
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         #map { width: 100vw; height: 100vh; z-index: 10; background: #0f172a; }
 
-        /* Dark HUD UI Panels */
+        /* HUD UI Panels */
         .hud-panel {
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(16px);
@@ -54,7 +54,7 @@
 
         .leaflet-control-attribution { display: none !important; }
 
-        /* Airport Icons */
+        /* Icons */
         .airport-icon {
             display: flex; align-items: center; justify-content: center;
             color: #475569; transition: all 0.3s ease;
@@ -62,6 +62,14 @@
         .airport-icon:hover {
             color: #60a5fa; transform: scale(1.4) rotate(-15deg);
             filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.8));
+        }
+        .landmark-icon {
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .landmark-icon:hover {
+            transform: scale(1.4);
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.8));
         }
 
         /* Map Tools */
@@ -99,7 +107,6 @@
         .dialog-btn:hover { transform: translateY(-1px); }
         .dialog-btn:active { transform: translateY(1px); }
         
-        /* Custom Input Styling */
         input[type="text"], input[type="number"], select {
             background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.3); color: white;
         }
@@ -115,14 +122,16 @@
 
     <div id="map"></div>
 
-    <!-- Top Left Telemetry Overlay -->
     <div id="draw-stats-overlay" class="absolute top-6 left-6 hud-panel rounded-2xl p-4 z-[2000] hidden min-w-[280px] transition-opacity duration-300">
         <div class="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-2">
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
                 <span class="font-bold text-xs tracking-widest uppercase text-slate-300" id="ds-title">Drawing Path</span>
             </div>
-            <div id="ds-anchor-badge" class="hidden text-[10px] font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30 uppercase">Anchored</div>
+            <div class="flex items-center gap-2">
+                <div id="ds-anchor-badge" class="hidden text-[10px] font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30 uppercase">Anchored</div>
+                <div id="ds-lock-badge" class="hidden text-[10px] font-bold bg-slate-500/20 text-slate-400 px-2 py-0.5 rounded border border-slate-500/30 uppercase">Tab to Lock</div>
+            </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
             <div>
@@ -158,7 +167,6 @@
 
     <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-6 pointer-events-none z-[1000]">
         <div class="max-w-7xl mx-auto hud-panel rounded-3xl p-5 pointer-events-auto flex flex-col gap-4">
-            
             <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3 mr-auto lg:mr-0">
                     <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/50 flex items-center justify-center text-blue-400">
@@ -167,7 +175,7 @@
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight leading-tight">Flight Planner Pro</h2>
                         <div class="text-xs text-slate-400 font-medium flex gap-2 items-center">
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Global APD Active</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> DB Active (Airports & Landmarks)</span>
                         </div>
                     </div>
                 </div>
@@ -176,11 +184,11 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
-                    <input type="text" id="airport-search" autocomplete="off" class="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm placeholder-slate-500 shadow-inner" placeholder="Search airports (JFK, LHR)...">
+                    <input type="text" id="airport-search" autocomplete="off" class="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm placeholder-slate-500 shadow-inner" placeholder="Search airports, monuments...">
                     <ul id="search-results" class="absolute w-full mt-2 hud-panel rounded-xl shadow-2xl hidden max-h-64 overflow-y-auto z-[2000] divide-y divide-slate-700/50"></ul>
                 </div>
                 
-                <button id="controls-btn" class="hidden lg:flex px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-semibold text-slate-300 transition-colors items-center gap-2">
+                <button id="controls-btn" class="hidden lg:flex px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-semibold text-slate-300 transition-colors items-center gap-2 dialog-btn">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
                     Controls & Info
                 </button>
@@ -188,7 +196,7 @@
 
             <div class="flex flex-col md:flex-row gap-3 items-stretch">
                 <div class="relative flex-grow group">
-                    <input type="text" id="route-output" class="w-full pl-4 pr-20 py-3 rounded-xl font-mono text-sm shadow-inner text-blue-300 bg-slate-900/80 border-slate-700 border" readonly placeholder="ROUTE STRING WILL GENERATE HERE...">
+                    <input type="text" id="route-output" class="w-full pl-4 pr-20 py-3 rounded-xl font-mono text-sm shadow-inner text-blue-300 bg-slate-900/80 border-slate-700 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="PASTE ROUTE STRING HERE OR CLICK MAP...">
                     <div class="absolute inset-y-0 right-2 flex items-center">
                         <span id="stats-badge" class="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-1 rounded border border-slate-600">0 WPT</span>
                     </div>
@@ -197,7 +205,7 @@
                     <button id="ai-brief-btn" class="px-5 py-3 bg-purple-700 hover:bg-purple-600 text-white rounded-xl font-semibold shadow-lg shadow-purple-900/50 flex items-center gap-2 dialog-btn border border-purple-500/50 transition-all">
                         <span class="text-pink-300">✨</span> AI Brief
                     </button>
-                    <button id="copy-btn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-900/50 flex items-center gap-2 dialog-btn">
+                    <button id="copy-btn" class="px-5 py-3 bg-blue-600 hover:bg-blue-50 text-white rounded-xl font-semibold shadow-lg shadow-blue-900/50 flex items-center gap-2 dialog-btn">
                         <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" /><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" /></svg> Copy
                     </button>
                     <button id="undo-btn" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-xl font-semibold dialog-btn disabled:opacity-50">Undo</button>
@@ -207,7 +215,6 @@
         </div>
     </div>
 
-    <!-- Notification Toast -->
     <div id="toast" class="fixed top-8 left-1/2 transform -translate-x-1/2 bg-blue-900/90 border border-blue-500/50 text-white px-5 py-2.5 rounded-xl font-medium shadow-2xl z-[5000] opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2 backdrop-blur-md">
         <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span id="toast-msg" class="text-sm">Notification</span>
@@ -217,11 +224,11 @@
         <div class="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-700 mb-1">Actions</div>
         <button id="cm-draw-hold" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-700 text-slate-200 flex items-center gap-2"><span class="text-orange-400">⟲</span> Draw Hold Pattern</button>
         <button id="cm-draw-turn" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-700 text-slate-200 flex items-center gap-2"><span class="text-purple-400">↪</span> Draw Turn Arc</button>
-        <button id="cm-draw-special" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-700 text-slate-200 flex items-center gap-2 border-b border-slate-700 pb-2 mb-1"><span class="text-pink-400">✨</span> Special Maneuvers</button>
+        <button id="cm-direct-point" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-700 text-slate-200 flex items-center gap-2 border-b border-slate-700 pb-2 mb-1"><span class="text-green-400">↗</span> Direct Radial Point</button>
+        <button id="cm-draw-special" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-700 text-slate-200 flex items-center gap-2 border-b border-slate-700 pb-2 mb-1"><span class="text-pink-400">✨</span> Extras & Turns</button>
         <button id="cm-delete-point" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-red-900/50 text-red-400 flex items-center gap-2"><span class="text-red-500">×</span> Delete Waypoint</button>
     </div>
 
-    <!-- Controls Dialog -->
     <div id="controls-dialog" class="fixed inset-0 modal-overlay z-[6000] hidden flex items-center justify-center p-4">
         <div class="hud-panel rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
@@ -233,16 +240,19 @@
                     <h4 class="font-bold text-blue-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Basic Mapping</h4>
                     <ul class="space-y-2 text-slate-300">
                         <li><b class="text-white">Left Click Map:</b> Place waypoint</li>
-                        <li><b class="text-white">Right Click Waypoint:</b> Open context menu</li>
+                        <li><b class="text-white">Middle Click Map:</b> Drop waypoint freely (even while measuring)</li>
+                        <li><b class="text-white">Right Click Waypoint:</b> Open context menu OR snap active Compass/Ruler</li>
                         <li><b class="text-white">Drag Map:</b> Pan view</li>
+                        <li><b class="text-white">Paste Route:</b> Paste coordinate strings (e.g. 530642N0003943W) to import!</li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-bold text-orange-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Drawing Setup</h4>
                     <ul class="space-y-2 text-slate-300">
                         <li><b class="text-white">Start Drawing:</b> Right-click waypoint -> Select mode</li>
-                        <li><b class="text-white">Anchoring:</b> Shapes automatically anchor to the selected waypoint.</li>
+                        <li><b class="text-white">Anchoring:</b> Shapes automatically stick to the selected waypoint.</li>
                         <li><b class="text-white">Backspace / Delete:</b> Detach shape from waypoint so it follows mouse freely.</li>
+                        <li><b class="text-white">Direct Radial (Tab):</b> Press Tab to lock heading. Arrow keys adjust.</li>
                     </ul>
                 </div>
                 <div>
@@ -251,14 +261,14 @@
                         <li><b class="text-white">Left Click:</b> Stamp shape to map</li>
                         <li><b class="text-white">Scroll Wheel:</b> Rotate heading</li>
                         <li><b class="text-white">Ctrl + Scroll:</b> Scale / Change Distance</li>
-                        <li><b class="text-white">Shift + Scroll:</b> Native map zoom</li>
+                        <li><b class="text-white">Shift + Scroll:</b> Zoom map in/out</li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-bold text-pink-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Drawing Controls (Keys)</h4>
                     <ul class="space-y-2 text-slate-300">
-                        <li><b class="text-white">Up / Down Arrows:</b> Adjust Resolution Points (smoothness geometry)</li>
-                        <li><b class="text-white">Left / Right Arrows:</b> Adjust Sweep Angle (Turns only. Negative flips left/right)</li>
+                        <li><b class="text-white">Up / Down Arrows:</b> Fine-tune Resolution Points by ±1 point (or adjust Radial Angle)</li>
+                        <li><b class="text-white">Left / Right Arrows:</b> Adjust Sweep Angle (Turns only) or adjust Radial Angle.</li>
                         <li><b class="text-white">Escape:</b> Cancel drawing mode</li>
                     </ul>
                 </div>
@@ -266,12 +276,11 @@
         </div>
     </div>
 
-    <!-- Reusable Prompts (Loops & Smoothness) -->
     <div id="action-prompt-dialog" class="fixed inset-0 modal-overlay z-[5000] hidden flex items-center justify-center p-4">
         <div class="hud-panel rounded-2xl p-6 border border-slate-600 w-full max-w-sm text-center">
             <h3 id="ap-title" class="text-xl font-bold text-white mb-2">Configure</h3>
             <p id="ap-desc" class="text-sm text-slate-400 mb-4">Description text</p>
-            <input type="number" id="ap-input" min="0" max="100" value="1" class="w-full rounded-xl p-3 text-center text-xl font-bold mb-5 bg-slate-900 border border-slate-700 text-white focus:border-blue-500 outline-none">
+            <input type="number" id="ap-input" min="1" max="100" value="1" class="w-full rounded-xl p-3 text-center text-xl font-bold mb-5 bg-slate-900 border border-slate-700 text-white focus:border-blue-500 outline-none">
             <div class="flex gap-3">
                 <button id="ap-cancel" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-semibold transition-colors">Cancel</button>
                 <button id="ap-confirm" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg transition-all">Confirm</button>
@@ -279,7 +288,6 @@
         </div>
     </div>
 
-    <!-- Menus for Shapes -->
     <div id="draw-menu-hold" class="fixed inset-0 modal-overlay z-[4000] hidden flex items-center justify-center p-4">
         <div class="hud-panel rounded-2xl p-6 w-full max-w-xs">
             <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-white">Select Hold</h3><button class="close-modal text-slate-400 hover:text-white">✕</button></div>
@@ -293,7 +301,7 @@
 
     <div id="draw-menu-special" class="fixed inset-0 modal-overlay z-[4000] hidden flex items-center justify-center p-4">
         <div class="hud-panel rounded-2xl p-6 w-full max-w-md">
-            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-white">Special Maneuvers</h3><button class="close-modal text-slate-400 hover:text-white">✕</button></div>
+            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-white">Extras & Maneuvers</h3><button class="close-modal text-slate-400 hover:text-white">✕</button></div>
             <div class="grid grid-cols-2 gap-2">
                 <button class="shape-btn px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-sm text-slate-200" data-mode="special" data-shape="sturn">S-Turn</button>
                 <button class="shape-btn px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-sm text-slate-200" data-mode="special" data-shape="teardrop">Teardrop</button>
@@ -308,7 +316,6 @@
         </div>
     </div>
 
-    <!-- AI Briefing Dialog -->
     <div id="ai-brief-dialog" class="fixed inset-0 modal-overlay z-[6000] hidden flex items-center justify-center p-4">
         <div class="hud-panel rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700/80 pb-3">
@@ -330,11 +337,12 @@
         
         let activeWaypointIndex = -1; 
         let waypoints = []; 
-        let markers = [];   
+        let markers = [];
+        let segmentLabels = []; // Array to store distance/heading text labels along the lines
         let routePolyline = null; 
 
-        // Map Setup
-        const map = L.map('map', { zoomControl: false }).setView([30, -30], 4);
+        // Map Setup (Keyboard disabled to fix arrow key panning issue)
+        const map = L.map('map', { zoomControl: false, keyboard: false }).setView([53.1, -1.5], 6);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd' });
@@ -346,35 +354,102 @@
 
         routePolyline = L.polyline([], { color: '#60a5fa', weight: 3, opacity: 0.9, dashArray: '10, 10', lineJoin: 'round' }).addTo(map);
 
-        // --- GLOBAL AIRPORTS ---
+        // --- STREAMING_CHUNK: Integrating Airports and Landmarks APIs ---
         const planeSvg = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M22 16.41v-3.41l-10-6.41v-4.59c0-1.1-.9-2-2-2s-2 .9-2 2v4.59l-10 6.41v3.41l10-3.14v5.18l-2.59 1.95v2.59l4.59-1.36 4.59 1.36v-2.59l-2.59-1.95v-5.18l10 3.14z"/></svg>`;
         const airportIcon = L.divIcon({ html: planeSvg, className: 'airport-icon', iconSize: [24,24], iconAnchor: [12,12] });
-        let globalAirports = [];
-        const airportsLayer = L.layerGroup().addTo(map);
-
-        async function fetchAirports() {
-            try {
-                showNotification('Connecting to Global Airport Database...', 3000);
-                const res = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
-                const data = await res.json();
-                globalAirports = Object.values(data).filter(a => a.lat && a.lon);
-                showNotification(`System Ready: ${globalAirports.length.toLocaleString()} Airports Loaded.`, 4000);
-            } catch (err) { showNotification("Failed to connect to airport database.", 3000); }
-        }
         
-        map.on('moveend', () => {
-            if (map.getZoom() < 6) return airportsLayer.clearLayers();
-            const b = map.getBounds();
-            const vis = globalAirports.filter(a => b.contains([a.lat, a.lon])).slice(0, 300);
-            airportsLayer.clearLayers();
-            vis.forEach(a => {
-                const l = a.iata ? `${a.name} (${a.iata})` : a.name;
-                L.marker([a.lat, a.lon], {icon: airportIcon}).bindTooltip(l, {className: 'custom-tooltip', direction: 'top', offset:[0,-10]})
-                 .on('click', e => { L.DomEvent.stopPropagation(e); addWaypoint(e.latlng); }).addTo(airportsLayer);
-            });
+        const starSvg = `<svg viewBox="0 0 24 24" fill="#fbbf24" class="w-6 h-6 drop-shadow-md"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+        const landmarkIcon = L.divIcon({ html: starSvg, className: 'landmark-icon', iconSize: [24,24], iconAnchor: [12,12] });
+        
+        let globalLocations = [];
+        const locationLayer = L.layerGroup().addTo(map);
+
+        // Hardcode Freedom's Wings specifically as requested
+        globalLocations.push({
+            name: "On Freedom's Wings (Lancaster Memorial)",
+            lat: 53.1118, lon: -0.6622,
+            type: 'landmark',
+            desc: "Historic Aircraft Monument (A46 Norton Disney)",
+            searchTokens: "freedom wings lancaster bomber memorial norton disney a46"
         });
 
-        // --- WAYPOINT LOGIC ---
+        // Dual Failsafe Database fetching
+        async function fetchDatabases() {
+            showNotification('Connecting to Global Aviation Databases...', 3000);
+            
+            // 1. Fetch Airports (Failsafe 1)
+            try {
+                const resAirports = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
+                if(resAirports.ok) {
+                    const airportData = await resAirports.json();
+                    Object.values(airportData).forEach(a => {
+                        if (a.lat && a.lon) {
+                            a.type = 'airport';
+                            a.searchTokens = `${a.name} ${a.iata||''} ${a.icao||''} ${a.city||''}`.toLowerCase();
+                            globalLocations.push(a);
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn("Airports database offline.", err);
+            }
+
+            // 2. Fetch Landmarks (Failsafe 2 - Robust Overpass API request)
+            try {
+                // nwr catches nodes, ways, and relations. out center calculates the middle of the ways.
+                const query = `[out:json][timeout:25];(nwr["historic"="aircraft"];nwr["tourism"="museum"]["museum"="aviation"];nwr["aeroway"="aerodrome"]["historic"="yes"];);out center 300;`;
+                const url = `https://overpass-api.de/api/interpreter`;
+                
+                // Using POST is more robust for Overpass
+                const resLandmarks = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `data=${encodeURIComponent(query)}`
+                });
+
+                if(resLandmarks.ok) {
+                    const landmarkData = await resLandmarks.json();
+                    if(landmarkData && landmarkData.elements) {
+                        landmarkData.elements.forEach(el => {
+                            // Extract lat/lon safely whether it's a node or a way (center)
+                            const lat = el.lat || (el.center && el.center.lat);
+                            const lon = el.lon || (el.center && el.center.lon);
+                            
+                            if (lat && lon) {
+                                const name = (el.tags && el.tags.name) || (el.tags && el.tags.historic === 'aircraft' ? "Historic Aircraft Display" : "Aviation Landmark");
+                                globalLocations.push({
+                                    name: name, lat: lat, lon: lon, type: 'landmark',
+                                    desc: (el.tags && el.tags.historic === 'aircraft') ? 'Historic Aircraft' : 'Aviation Museum / Site',
+                                    searchTokens: name.toLowerCase()
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn("Landmarks database offline.", err);
+            }
+            
+            showNotification(`System Ready: ${globalLocations.length.toLocaleString()} Airports & Landmarks Loaded.`, 4000);
+            renderLocations();
+        }
+        
+        function renderLocations() {
+            if (map.getZoom() < 6) return locationLayer.clearLayers();
+            const b = map.getBounds();
+            const vis = globalLocations.filter(a => b.contains([a.lat, a.lon])).slice(0, 300);
+            locationLayer.clearLayers();
+            vis.forEach(a => {
+                const isLandmark = a.type === 'landmark';
+                const l = isLandmark ? a.name : (a.iata ? `${a.name} (${a.iata})` : a.name);
+                L.marker([a.lat, a.lon], {icon: isLandmark ? landmarkIcon : airportIcon})
+                 .bindTooltip(l, {className: 'custom-tooltip', direction: 'top', offset:[0,-10]})
+                 .on('click', e => { L.DomEvent.stopPropagation(e); addWaypoint(e.latlng); }).addTo(locationLayer);
+            });
+        }
+        map.on('moveend', renderLocations);
+
+        // --- STREAMING_CHUNK: Waypoint & Route String Logic ---
         function convertToDMS(decimal, isLat) {
             let dir = isLat ? (decimal >= 0 ? 'N' : 'S') : (decimal >= 0 ? 'E' : 'W');
             let abs = Math.abs(decimal), deg = Math.floor(abs), mf = (abs - deg) * 60;
@@ -387,11 +462,70 @@
             const w = latlng.wrap(); return convertToDMS(w.lat, true) + convertToDMS(w.lng, false);
         }
 
+        // Two-way Route Decoder (Decode DDMMSSN DDDMMSSW)
+        function parseRouteString(routeStr) {
+            const regex = /(\d{2})(\d{2})(\d{2})([NS])(\d{3})(\d{2})(\d{2})([EW])/g;
+            let match;
+            const newWaypoints = [];
+            while ((match = regex.exec(routeStr)) !== null) {
+                const latDeg = parseInt(match[1]), latMin = parseInt(match[2]), latSec = parseInt(match[3]), latDir = match[4];
+                let lat = latDeg + (latMin / 60) + (latSec / 3600);
+                if (latDir === 'S') lat = -lat;
+
+                const lngDeg = parseInt(match[5]), lngMin = parseInt(match[6]), lngSec = parseInt(match[7]), lngDir = match[8];
+                let lng = lngDeg + (lngMin / 60) + (lngSec / 3600);
+                if (lngDir === 'W') lng = -lng;
+
+                newWaypoints.push(L.latLng(lat, lng));
+            }
+            return newWaypoints;
+        }
+
+        routeOutput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                const str = e.target.value.toUpperCase();
+                const parsedWpts = parseRouteString(str);
+                if(parsedWpts.length > 0) {
+                    waypoints = parsedWpts;
+                    renderRoute();
+                    map.fitBounds(L.latLngBounds(waypoints), {padding: [50, 50]});
+                    showNotification(`Success: Imported ${waypoints.length} waypoints from string.`);
+                } else if (str.trim() === '') {
+                    waypoints = [];
+                    renderRoute();
+                } else {
+                    showNotification("Error: Invalid route format. Expected DDMMSSN DDDMMSSW.");
+                    routeOutput.value = waypoints.map(formatCoordinate).join(' ');
+                }
+            }
+        });
+
+        // --- STREAMING_CHUNK: Line Segment Labeling Math ---
         function renderRoute() {
+            // Clean up previous markers and labels
             markers.forEach(m => map.removeLayer(m)); markers = [];
+            segmentLabels.forEach(l => map.removeLayer(l)); segmentLabels = [];
+            
+            // Draw waypoints
             waypoints.forEach((wp, i) => {
                 const m = L.marker(wp, { icon: L.divIcon({className: 'custom-div-icon', html: `<div class="waypoint-marker">${i + 1}</div>`, iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(map);
                 m.on('contextmenu', e => {
+                    // Snap Compass or Ruler start to this marker if active
+                    if (compassActive) {
+                        L.DomEvent.stopPropagation(e); e.originalEvent.preventDefault();
+                        compassStart = wp;
+                        compassLine.setLatLngs([compassStart, compassStart]);
+                        compassTooltipMarker.setLatLng(compassStart).bindTooltip(headingTooltip).openTooltip().setTooltipContent('0°');
+                        return;
+                    }
+                    if (rulerActive) {
+                        L.DomEvent.stopPropagation(e); e.originalEvent.preventDefault();
+                        rulerStart = wp;
+                        rulerLine.setLatLngs([rulerStart, rulerStart]);
+                        rulerTooltipMarker.setLatLng(rulerStart).bindTooltip(distanceTooltip).openTooltip().setTooltipContent('0 mi');
+                        return;
+                    }
+
                     L.DomEvent.stopPropagation(e); e.originalEvent.preventDefault();
                     activeWaypointIndex = i;
                     const cm = document.getElementById('context-menu');
@@ -400,17 +534,61 @@
                 });
                 markers.push(m);
             });
+            
+            // Calculate and draw line labels (Distance & Angle)
+            for(let i = 0; i < waypoints.length - 1; i++) {
+                let wp1 = waypoints[i];
+                let wp2 = waypoints[i+1];
+                
+                // Distance in Miles
+                let dist = (wp1.distanceTo(wp2) * 0.000621371).toFixed(1);
+                
+                // Bearing in Degrees
+                const toRad = Math.PI/180;
+                const dLon = (wp2.lng-wp1.lng)*toRad;
+                const y = Math.sin(dLon)*Math.cos(wp2.lat*toRad);
+                const x = Math.cos(wp1.lat*toRad)*Math.sin(wp2.lat*toRad) - Math.sin(wp1.lat*toRad)*Math.cos(wp2.lat*toRad)*Math.cos(dLon);
+                const brg = Math.round((Math.atan2(y, x)*(180/Math.PI)+360)%360);
+                
+                // Midpoint for the label
+                let midLat = (wp1.lat + wp2.lat) / 2;
+                let midLng = (wp1.lng + wp2.lng) / 2;
+                
+                // Create custom label
+                let labelMarker = L.marker([midLat, midLng], {
+                    icon: L.divIcon({
+                        className: 'bg-transparent border-none', // Override Leaflet defaults
+                        html: `<div class="flex justify-center items-center pointer-events-none w-[100px] h-[20px]">
+                                <div class="bg-slate-900/90 text-slate-200 text-[10px] font-mono px-2 py-0.5 rounded-md border border-slate-700 backdrop-blur-md shadow-lg whitespace-nowrap flex items-center">
+                                    <span class="text-green-400 font-bold">${dist}</span><span class="text-slate-400 text-[9px] mr-1.5 ml-0.5">mi</span>
+                                    <span class="text-slate-600 mr-1.5">|</span>
+                                    <span class="text-orange-400 font-bold">${brg}</span><span class="text-slate-400 text-[9px]">°</span>
+                                </div>
+                               </div>`,
+                        iconSize: [100, 20],
+                        iconAnchor: [50, 10] // Center perfectly
+                    }),
+                    interactive: false // Don't block clicks to map or tools underneath!
+                }).addTo(map);
+                
+                segmentLabels.push(labelMarker);
+            }
+            
             routePolyline.setLatLngs(waypoints);
-            routeOutput.value = waypoints.map(formatCoordinate).join(' ');
+            
+            if(document.activeElement !== routeOutput) {
+                routeOutput.value = waypoints.map(formatCoordinate).join(' ');
+                routeOutput.scrollLeft = routeOutput.scrollWidth;
+            }
+            
             statsBadge.innerText = `${waypoints.length} WPT`;
             document.getElementById('undo-btn').disabled = !waypoints.length;
             document.getElementById('clear-btn').disabled = !waypoints.length;
-            routeOutput.scrollLeft = routeOutput.scrollWidth;
         }
 
         function addWaypoint(latlng) { waypoints.push(latlng); renderRoute(); }
 
-        // --- COMPASS & RULER ---
+        // --- STREAMING_CHUNK: Compass & Ruler Tools ---
         let compassActive = false, rulerActive = false, compassStart = null, rulerStart = null;
         let compassLine = L.polyline([], {color: '#ef4444', weight: 3, dashArray: '6, 6'}).addTo(map);
         let rulerLine = L.polyline([], {color: '#10b981', weight: 3, dashArray: '6, 6'}).addTo(map);
@@ -425,13 +603,16 @@
             onAdd: function() {
                 const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control flex flex-col gap-1 bg-transparent !shadow-none');
                 
+                L.DomEvent.disableClickPropagation(container);
+                L.DomEvent.disableScrollPropagation(container);
+                
                 const cb = L.DomUtil.create('a', 'map-tool-btn rounded-xl shadow-lg', container);
                 cb.innerHTML = '🧭'; cb.title = 'Compass Mode'; cb.href = '#';
-                L.DomEvent.on(cb, 'click', (e) => { e.preventDefault(); toggleCompass(cb); });
+                L.DomEvent.on(cb, 'click', (e) => { e.preventDefault(); e.stopPropagation(); toggleCompass(cb); });
 
                 const rb = L.DomUtil.create('a', 'map-tool-btn rounded-xl shadow-lg mt-2', container);
                 rb.innerHTML = '📏'; rb.title = 'Ruler Mode'; rb.href = '#';
-                L.DomEvent.on(rb, 'click', (e) => { e.preventDefault(); toggleRuler(rb); });
+                L.DomEvent.on(rb, 'click', (e) => { e.preventDefault(); e.stopPropagation(); toggleRuler(rb); });
                 
                 return container;
             }
@@ -452,12 +633,22 @@
             else { btn.classList.remove('active-ruler'); document.getElementById('map').classList.remove('crosshair-cursor-map'); rulerStart = null; rulerLine.setLatLngs([]); rulerTooltipMarker.unbindTooltip(); }
         }
 
-        // --- INTERACTIVE DRAWING SYSTEM ---
+        // --- STREAMING_CHUNK: Advanced Drawing System & Math Engine ---
         let isDrawingHold = false, isPrompting = false;
-        let drawHoldParams = { mode: 'hold', shape: 'capsule', dist: 10, angle: 90, loops: 1, points: 40, sweep: 90, smoothness: 0 };
+        let drawHoldParams = { mode: 'hold', shape: 'capsule', dist: 10, angle: 90, loops: 1, points: 40, sweep: 90 };
         let drawHoldActiveIndex = -1;
         let lastMouseLatLng = null, pendingAnchorLatLng = null;
         let isSnappedToWaypoint = false, snappedLatLng = null;
+        
+        // Direct Radial State
+        let isDrawingDirect = false;
+        let directLocked = false;
+        let directAngle = 0;
+        let directDistance = 0;
+        let directStartLatLng = null;
+        let directActiveIndex = -1;
+        const directIncrements = [45, 22.5, 10, 5, 1];
+        let directIncIdx = 0;
 
         const rotateIncrements = [5, 1, 0.5]; let rotIdx = 0;
         const scaleIncrements = [0.1, 1, 10]; let scaleIdx = 1;
@@ -473,11 +664,15 @@
                 const btnR = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg', container); btnR.id = 'dt-rot'; btnR.innerHTML = `⟳ ${rotateIncrements[rotIdx]}°`;
                 const btnS = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg', container); btnS.id = 'dt-scale'; btnS.innerHTML = `⤢ ${scaleIncrements[scaleIdx]}mi`;
                 const btnSw = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg hidden', container); btnSw.id = 'dt-sweep'; btnSw.innerHTML = `∡ ${sweepIncrements[sweepIdx]}°`;
+                const btnDirInc = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg hidden', container); btnDirInc.id = 'dt-dir-inc'; btnDirInc.innerHTML = `∡ ${directIncrements[directIncIdx]}°`;
                 
                 L.DomEvent.disableClickPropagation(container);
+                L.DomEvent.disableScrollPropagation(container);
+                
                 L.DomEvent.on(btnR, 'click', e => { e.preventDefault(); rotIdx = (rotIdx+1)%rotateIncrements.length; btnR.innerHTML = `⟳ ${rotateIncrements[rotIdx]}°`; });
                 L.DomEvent.on(btnS, 'click', e => { e.preventDefault(); scaleIdx = (scaleIdx+1)%scaleIncrements.length; btnS.innerHTML = `⤢ ${scaleIncrements[scaleIdx]}mi`; });
                 L.DomEvent.on(btnSw, 'click', e => { e.preventDefault(); sweepIdx = (sweepIdx+1)%sweepIncrements.length; btnSw.innerHTML = `∡ ${sweepIncrements[sweepIdx]}°`; });
+                L.DomEvent.on(btnDirInc, 'click', e => { e.preventDefault(); directIncIdx = (directIncIdx+1)%directIncrements.length; btnDirInc.innerHTML = `∡ ${directIncrements[directIncIdx]}°`; });
                 return container;
             }
         });
@@ -495,7 +690,7 @@
                 isSnappedToWaypoint = true;
                 snappedLatLng = waypoints[drawHoldActiveIndex];
                 document.getElementById('ds-anchor-badge').classList.remove('hidden');
-                showNotification("Anchored to waypoint. Press Backspace to move freely.", 4000);
+                showNotification("Anchored to waypoint. Press Backspace to detach and move freely.", 4000);
             } else {
                 isSnappedToWaypoint = false;
                 snappedLatLng = null;
@@ -509,14 +704,21 @@
 
             document.getElementById('ds-sweep-container').style.display = mode === 'turn' ? 'block' : 'none';
             document.getElementById('dt-sweep').style.display = mode === 'turn' ? 'block' : 'none';
+            document.getElementById('ds-pts-container').style.display = 'block';
             
             document.querySelector('.draw-tool-ui').style.display = 'flex';
+            document.getElementById('dt-rot').style.display = 'block';
+            document.getElementById('dt-scale').style.display = 'block';
+            document.getElementById('dt-dir-inc').style.display = 'none';
+            
             updateDrawStatsUI();
             updateGhostLine();
         }
 
         function exitDrawMode() {
             isDrawingHold = false; isPrompting = false; pendingAnchorLatLng = null;
+            isDrawingDirect = false; directStartLatLng = null;
+            document.getElementById('ds-lock-badge').classList.add('hidden');
             document.getElementById('map').classList.remove('crosshair-cursor-map');
             ghostHoldLine.setLatLngs([]); ghostEntryMarker.removeFrom(map);
             document.getElementById('draw-stats-overlay').classList.remove('opacity-100');
@@ -532,35 +734,88 @@
         }
 
         const milesToDeg = 1 / 69.05;
-        
         function getScale(lat) { const c = Math.cos(lat * Math.PI/180); return c === 0 ? 1 : 1/c; }
+
+        // Core Dest Point Math for Direct Radial
+        function computeDestinationPoint(start, distanceMiles, bearingDeg) {
+            const R = 3958.8; // Earth radius in miles
+            const lat1 = start.lat * Math.PI / 180;
+            const lon1 = start.lng * Math.PI / 180;
+            const brng = bearingDeg * Math.PI / 180;
+            const d = distanceMiles;
+            const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
+            const lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
+            return L.latLng(lat2 * 180 / Math.PI, lon2 * 180 / Math.PI);
+        }
+
+        // --- PATH RESAMPLING ENGINE ---
+        function resamplePath(latlngs, numPoints) {
+            if (numPoints <= 1) return [latlngs[0]];
+            if (latlngs.length === 0) return [];
+            
+            let dists = [0];
+            let totalDist = 0;
+            for(let i=1; i<latlngs.length; i++) {
+                let dx = latlngs[i].lng - latlngs[i-1].lng;
+                let dy = latlngs[i].lat - latlngs[i-1].lat;
+                let d = Math.sqrt(dx*dx + dy*dy);
+                totalDist += d;
+                dists.push(totalDist);
+            }
+            
+            if (totalDist === 0) return Array(numPoints).fill(latlngs[0]);
+            
+            let resampled = [];
+            for(let i=0; i<numPoints; i++) {
+                let targetDist = (i / (numPoints - 1)) * totalDist;
+                for(let j=1; j<dists.length; j++) {
+                    if (dists[j] >= targetDist || j === dists.length - 1) {
+                        let prevDist = dists[j-1];
+                        let segmentLen = dists[j] - prevDist;
+                        let t = segmentLen === 0 ? 0 : (targetDist - prevDist) / segmentLen;
+                        resampled.push(L.latLng(
+                            latlngs[j-1].lat + t * (latlngs[j].lat - latlngs[j-1].lat),
+                            latlngs[j-1].lng + t * (latlngs[j].lng - latlngs[j-1].lng)
+                        ));
+                        break;
+                    }
+                }
+            }
+            return resampled;
+        }
 
         function generateHoldPoints(anchor, shape, P, D, loops, angle) {
             if(!anchor) return [];
             const rotRad = (90 - angle) * (Math.PI / 180);
-            const pts = []; const lngScale = getScale(anchor.lat);
+            let rawPts = []; const lngScale = getScale(anchor.lat);
             let R=0, W=0;
             if(shape==='capsule') { W = D * milesToDeg; R = (D * 0.3) * milesToDeg; }
             else if(shape==='circle') { R = (D/2) * milesToDeg; }
             
+            const tracePoints = 100;
             const S1=W, S2=S1+Math.PI*R, S3=S2+W, S4=S3+Math.PI*R;
-            for(let l=0; l<loops; l++){
-                for(let i=1; i<=P; i++){
-                    let dx=0, dy=0;
-                    if(shape==='figure8'){
-                        const t = (i/P)*2*Math.PI;
-                        dx = (D/2)*milesToDeg*Math.sin(t); dy = (D/2)*milesToDeg*Math.sin(t)*Math.cos(t)*2;
-                    } else {
-                        const d = (i/P)*S4;
-                        if(d<=S1) { dx=(d/S1)*W; dy=0; }
-                        else if(d<=S2) { const p=(d-S1)/(Math.PI*R); const t=-Math.PI/2+p*Math.PI; dx=W+R*Math.cos(t); dy=R+R*Math.sin(t); }
-                        else if(d<=S3) { const p=(d-S2)/W; dx=W-p*W; dy=2*R; }
-                        else { const p=(d-S3)/(Math.PI*R); const t=Math.PI/2+p*Math.PI; dx=R*Math.cos(t); dy=R+R*Math.sin(t); }
-                    }
-                    const px = dx*Math.cos(rotRad) - dy*Math.sin(rotRad);
-                    const py = dx*Math.sin(rotRad) + dy*Math.cos(rotRad);
-                    pts.push(L.latLng(anchor.lat+py, anchor.lng+(px*lngScale)));
+            
+            for(let i=1; i<=tracePoints; i++){
+                let dx=0, dy=0;
+                if(shape==='figure8'){
+                    const t = (i/tracePoints)*2*Math.PI;
+                    dx = (D/2)*milesToDeg*Math.sin(t); dy = (D/2)*milesToDeg*Math.sin(t)*Math.cos(t)*2;
+                } else {
+                    const d = (i/tracePoints)*S4;
+                    if(d<=S1) { dx=(d/S1)*W; dy=0; }
+                    else if(d<=S2) { const p=(d-S1)/(Math.PI*R); const t=-Math.PI/2+p*Math.PI; dx=W+R*Math.cos(t); dy=R+R*Math.sin(t); }
+                    else if(d<=S3) { const p=(d-S2)/W; dx=W-p*W; dy=2*R; }
+                    else { const p=(d-S3)/(Math.PI*R); const t=Math.PI/2+p*Math.PI; dx=R*Math.cos(t); dy=R+R*Math.sin(t); }
                 }
+                const px = dx*Math.cos(rotRad) - dy*Math.sin(rotRad);
+                const py = dx*Math.sin(rotRad) + dy*Math.cos(rotRad);
+                rawPts.push(L.latLng(anchor.lat+py, anchor.lng+(px*lngScale)));
+            }
+
+            let resampled = resamplePath(rawPts, P);
+            let pts = [];
+            for(let l=0; l<loops; l++){
+                pts = pts.concat(l > 0 ? resampled.slice(1) : resampled);
             }
             return pts;
         }
@@ -581,65 +836,36 @@
             return pts;
         }
 
-        function generateSpecialPoints(anchor, shape, D, angle, P) {
+        function generateSpecialPoints(anchor, shape, D, angle, P, loops = 1) {
             if(!anchor) return [];
             let rawPts = []; const W = D * milesToDeg;
             
             switch(shape) {
-                case 'zigzag': 
-                    rawPts = [[0,0], [W,W], [W*2,0], [W*3,W], [W*4,0]]; 
-                    break;
-                case 'square': 
-                    rawPts = [[0,0], [0,W], [W,W], [W,-W], [-W,-W], [-W,W*2], [W*2,W*2], [W*2,-W*2]]; 
-                    break;
-                case 'star': 
-                    for(let i=0;i<=10;i++){ const r=i%2===0?W:W*0.4; const a=i*Math.PI/5; rawPts.push([Math.sin(a)*r, Math.cos(a)*r]); } 
-                    break;
-                case 'bowtie': 
-                    rawPts = [[0,0], [W,W], [W,-W], [0,0], [-W,W], [-W,-W], [0,0]]; 
-                    break;
-                case 'sturn': 
-                    rawPts = [[0,0], [W/2, W/2], [W, 0], [W*1.5, -W/2], [W*2, 0]]; 
-                    break;
-                case 'teardrop': 
-                    rawPts = [[0,0], [-W*0.4, W*0.6], [-W*0.6, W*1.2], [0, W*1.6], [W*0.6, W*1.2], [W*0.4, W*0.6], [0,0]]; 
-                    break;
-                case 'procedure': 
-                    rawPts = [[0,0], [0, W], [W*0.5, W*1.5], [W*0.1, W*1.9], [-W*0.4, W*1.4], [0, W], [0, -W*0.5]]; 
-                    break;
-                case 'hammerhead': 
-                    rawPts = [[0,0], [0, W*2], [W*0.1, W*2.1], [W*0.2, W*2], [W*0.2, 0]]; 
-                    break;
-                case 'sector': 
-                    rawPts = [[0,0], [0, W], [W*0.866, W*0.5], [0,0], [W*0.866, -W*0.5], [0, -W], [0,0], [-W*0.866, -W*0.5], [-W*0.866, W*0.5], [0,0]]; 
-                    break;
-                default: 
-                    rawPts = [[0,0], [0, W]]; // Fallback
+                case 'zigzag': rawPts = [[0,0], [W,W], [W*2,0], [W*3,W], [W*4,0]]; break;
+                case 'square': rawPts = [[0,0], [0,W], [W,W], [W,-W], [-W,-W], [-W,W*2], [W*2,W*2], [W*2,-W*2]]; break;
+                case 'star': for(let i=0;i<=10;i++){ const r=i%2===0?W:W*0.4; const a=i*Math.PI/5; rawPts.push([Math.sin(a)*r, Math.cos(a)*r]); } break;
+                case 'bowtie': rawPts = [[0,0], [W,W], [W,-W], [0,0], [-W,W], [-W,-W], [0,0]]; break;
+                case 'sturn': rawPts = [[0,0], [W/2, W/2], [W, 0], [W*1.5, -W/2], [W*2, 0]]; break;
+                case 'teardrop': rawPts = [[0,0], [-W*0.4, W*0.6], [-W*0.6, W*1.2], [0, W*1.6], [W*0.6, W*1.2], [W*0.4, W*0.6], [0,0]]; break;
+                case 'procedure': rawPts = [[0,0], [0, W], [W*0.5, W*1.5], [W*0.1, W*1.9], [-W*0.4, W*1.4], [0, W], [0, -W*0.5]]; break;
+                case 'hammerhead': rawPts = [[0,0], [0, W*2], [W*0.1, W*2.1], [W*0.2, W*2], [W*0.2, 0]]; break;
+                case 'sector': rawPts = [[0,0], [0, W], [W*0.866, W*0.5], [0,0], [W*0.866, -W*0.5], [0, -W], [0,0], [-W*0.866, -W*0.5], [-W*0.866, W*0.5], [0,0]]; break;
+                default: rawPts = [[0,0], [0, W]]; 
             }
 
             const rotRad = (90 - angle) * (Math.PI / 180); const lngScale = getScale(anchor.lat);
-            return rawPts.map(pt => {
+            let transformedPts = rawPts.map(pt => {
                 const px = pt[0]*Math.cos(rotRad) - pt[1]*Math.sin(rotRad);
                 const py = pt[0]*Math.sin(rotRad) + pt[1]*Math.cos(rotRad);
                 return L.latLng(anchor.lat+py, anchor.lng+(px*lngScale));
             });
-        }
 
-        function chaikinSmooth(latlngs, iterations) {
-            if(iterations === 0 || latlngs.length < 3) return latlngs;
-            let current = latlngs;
-            for(let it=0; it<iterations; it++) {
-                let smoothed = [];
-                smoothed.push(current[0]);
-                for(let i=0; i<current.length-1; i++) {
-                    const p0 = current[i], p1 = current[i+1];
-                    smoothed.push(L.latLng(p0.lat*0.75 + p1.lat*0.25, p0.lng*0.75 + p1.lng*0.25));
-                    smoothed.push(L.latLng(p0.lat*0.25 + p1.lat*0.75, p0.lng*0.25 + p1.lng*0.75));
-                }
-                smoothed.push(current[current.length-1]);
-                current = smoothed;
+            let resampled = resamplePath(transformedPts, P);
+            let pts = [];
+            for(let l=0; l<loops; l++){
+                pts = pts.concat(l > 0 ? resampled.slice(1) : resampled);
             }
-            return current;
+            return pts;
         }
 
         function updateGhostLine() {
@@ -647,16 +873,17 @@
             const anchor = isSnappedToWaypoint ? snappedLatLng : lastMouseLatLng;
             if (!anchor) return;
             let pts = [];
-            if(drawHoldParams.mode === 'hold') pts = generateHoldPoints(anchor, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, drawHoldParams.loops, drawHoldParams.angle);
+            
+            if(drawHoldParams.mode === 'hold') pts = generateHoldPoints(anchor, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, 1, drawHoldParams.angle);
             else if(drawHoldParams.mode === 'turn') pts = generateTurnPoints(anchor, drawHoldParams.dist, drawHoldParams.angle, drawHoldParams.sweep, drawHoldParams.points);
-            else if(drawHoldParams.mode === 'special') pts = generateSpecialPoints(anchor, drawHoldParams.shape, drawHoldParams.dist, drawHoldParams.angle, drawHoldParams.points);
+            else if(drawHoldParams.mode === 'special') pts = generateSpecialPoints(anchor, drawHoldParams.shape, drawHoldParams.dist, drawHoldParams.angle, drawHoldParams.points, 1);
             
             ghostHoldLine.setLatLngs(pts);
             if(pts.length > 0) ghostEntryMarker.setLatLng(pts[0]);
             updateDrawStatsUI();
         }
 
-        // Event Listeners
+        // --- STREAMING_CHUNK: Event Listeners & Drawing Input ---
         map.on('mousemove', e => {
             if(compassActive && compassStart) {
                 compassLine.setLatLngs([compassStart, e.latlng]);
@@ -675,7 +902,26 @@
                 rulerTooltipMarker.setTooltipContent(`${mi.toFixed(1)} mi`);
             }
             lastMouseLatLng = e.latlng;
-            updateGhostLine();
+            
+            if (isDrawingDirect && directStartLatLng) {
+                directDistance = directStartLatLng.distanceTo(lastMouseLatLng) * 0.000621371;
+                
+                if (!directLocked) {
+                    const toRad=Math.PI/180, dLon=(lastMouseLatLng.lng-directStartLatLng.lng)*toRad;
+                    const y=Math.sin(dLon)*Math.cos(lastMouseLatLng.lat*toRad);
+                    const x=Math.cos(directStartLatLng.lat*toRad)*Math.sin(lastMouseLatLng.lat*toRad) - Math.sin(directStartLatLng.lat*toRad)*Math.cos(lastMouseLatLng.lat*toRad)*Math.cos(dLon);
+                    directAngle = (Math.atan2(y, x)*(180/Math.PI)+360)%360;
+                }
+                
+                const endPt = computeDestinationPoint(directStartLatLng, directDistance, directAngle);
+                ghostHoldLine.setLatLngs([directStartLatLng, endPt]);
+                ghostEntryMarker.setLatLng(endPt);
+                
+                document.getElementById('ds-dist').innerText = directDistance.toFixed(1);
+                document.getElementById('ds-angle').innerText = directAngle.toFixed(1);
+            } else {
+                updateGhostLine();
+            }
         });
 
         document.getElementById('map').addEventListener('wheel', e => {
@@ -693,15 +939,51 @@
 
         document.addEventListener('keydown', e => {
             if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            if(e.key === 'Escape') exitDrawMode();
+            if(e.key === 'Escape') { exitDrawMode(); return; }
+            
+            // Direct Radial Angle Locking & Arrow Keys
+            if (isDrawingDirect) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    directLocked = !directLocked;
+                    const lockBadge = document.getElementById('ds-lock-badge');
+                    if (directLocked) {
+                        lockBadge.className = "text-[10px] font-bold bg-green-500/20 text-green-400 px-2 py-0.5 rounded border border-green-500/30 uppercase";
+                        lockBadge.innerText = 'Locked';
+                        showNotification("Angle Locked. Use Arrow Keys to adjust.", 2000);
+                    } else {
+                        lockBadge.className = "text-[10px] font-bold bg-slate-500/20 text-slate-400 px-2 py-0.5 rounded border border-slate-500/30 uppercase";
+                        lockBadge.innerText = 'Tab to Lock';
+                        showNotification("Angle Unlocked.", 2000);
+                    }
+                }
+                if (directLocked) {
+                    const inc = directIncrements[directIncIdx];
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                        e.preventDefault(); directAngle = (directAngle + inc) % 360;
+                    }
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                        e.preventDefault(); directAngle = (directAngle - inc + 360) % 360;
+                    }
+                    if (directStartLatLng) {
+                        const endPt = computeDestinationPoint(directStartLatLng, directDistance, directAngle);
+                        ghostHoldLine.setLatLngs([directStartLatLng, endPt]);
+                        ghostEntryMarker.setLatLng(endPt);
+                        document.getElementById('ds-angle').innerText = directAngle.toFixed(1);
+                    }
+                }
+                return;
+            }
+
             if((e.key === 'Backspace' || e.key === 'Delete') && isDrawingHold && isSnappedToWaypoint) {
                 e.preventDefault(); isSnappedToWaypoint = false;
                 document.getElementById('ds-anchor-badge').classList.add('hidden');
                 showNotification("Unsnapped! Pattern is following mouse."); updateGhostLine();
             }
             if(isDrawingHold) {
-                if(e.key === 'ArrowUp') { e.preventDefault(); drawHoldParams.points += 5; }
-                if(e.key === 'ArrowDown') { e.preventDefault(); drawHoldParams.points = Math.max(5, drawHoldParams.points - 5); }
+                if(e.key === 'ArrowUp') { e.preventDefault(); drawHoldParams.points += 1; }
+                if(e.key === 'ArrowDown') { e.preventDefault(); drawHoldParams.points = Math.max(2, drawHoldParams.points - 1); }
+                
                 if(drawHoldParams.mode === 'turn') {
                     if(e.key === 'ArrowRight') { e.preventDefault(); drawHoldParams.sweep = Math.min(180, drawHoldParams.sweep + sweepIncrements[sweepIdx]); }
                     if(e.key === 'ArrowLeft') { e.preventDefault(); drawHoldParams.sweep = Math.max(-180, drawHoldParams.sweep - sweepIncrements[sweepIdx]); }
@@ -715,21 +997,25 @@
         const pInput = document.getElementById('ap-input');
         
         map.on('click', e => {
+            if (isDrawingDirect) {
+                if (directStartLatLng) {
+                    const endPt = computeDestinationPoint(directStartLatLng, directDistance, directAngle);
+                    waypoints.splice(directActiveIndex + 1, 0, endPt);
+                    renderRoute();
+                }
+                exitDrawMode();
+                return;
+            }
+            
             if(isDrawingHold) {
                 if(isPrompting) return;
                 pendingAnchorLatLng = isSnappedToWaypoint ? snappedLatLng : e.latlng;
                 
-                if(drawHoldParams.mode === 'hold') {
+                if(drawHoldParams.mode === 'hold' || drawHoldParams.mode === 'special') {
                     isPrompting = true;
-                    document.getElementById('ap-title').innerText = "Hold Loops";
-                    document.getElementById('ap-desc').innerText = "How many loops should the aircraft perform?";
+                    document.getElementById('ap-title').innerText = drawHoldParams.mode === 'hold' ? "Hold Loops" : "Maneuver Loops";
+                    document.getElementById('ap-desc').innerText = "How many iterations should the aircraft perform?";
                     pInput.value = 1; pInput.max = 50;
-                    pDialog.classList.remove('hidden'); pInput.focus();
-                } else if(drawHoldParams.mode === 'special') {
-                    isPrompting = true;
-                    document.getElementById('ap-title').innerText = "Corner Smoothness";
-                    document.getElementById('ap-desc').innerText = "Smoothing Level (0 = Sharp, 5 = Max Curve)";
-                    pInput.value = 3; pInput.max = 5;
                     pDialog.classList.remove('hidden'); pInput.focus();
                 } else {
                     const pts = generateTurnPoints(pendingAnchorLatLng, drawHoldParams.dist, drawHoldParams.angle, drawHoldParams.sweep, drawHoldParams.points);
@@ -745,14 +1031,25 @@
             } else { addWaypoint(e.latlng); }
         });
 
+        // Middle-Click bypasses tools to drop a waypoint seamlessly
+        document.getElementById('map').addEventListener('mousedown', function(e) {
+            if (e.button === 1) { e.preventDefault(); }
+        });
+        
+        map.on('mousedown', e => {
+            if (e.originalEvent.button === 1) { // Middle click
+                e.originalEvent.preventDefault();
+                addWaypoint(e.latlng);
+            }
+        });
+
         document.getElementById('ap-confirm').addEventListener('click', () => {
-            const val = parseInt(pInput.value);
+            const loops = parseInt(pInput.value) || 1;
             let pts = [];
             if(drawHoldParams.mode === 'hold') {
-                pts = generateHoldPoints(pendingAnchorLatLng, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, val, drawHoldParams.angle);
+                pts = generateHoldPoints(pendingAnchorLatLng, drawHoldParams.shape, drawHoldParams.points, drawHoldParams.dist, loops, drawHoldParams.angle);
             } else if(drawHoldParams.mode === 'special') {
-                const raw = generateSpecialPoints(pendingAnchorLatLng, drawHoldParams.shape, drawHoldParams.dist, drawHoldParams.angle, drawHoldParams.points);
-                pts = chaikinSmooth(raw, Math.min(5, Math.max(0, val)));
+                pts = generateSpecialPoints(pendingAnchorLatLng, drawHoldParams.shape, drawHoldParams.dist, drawHoldParams.angle, drawHoldParams.points, loops);
             }
             waypoints.splice(drawHoldActiveIndex+1, 0, ...pts);
             renderRoute();
@@ -764,28 +1061,76 @@
             pDialog.classList.add('hidden'); isPrompting = false; pendingAnchorLatLng = null;
         });
 
-        // Search & Context Logic
+        // --- STREAMING_CHUNK: Search, Menus, and AI ---
         const searchInput = document.getElementById('airport-search'), searchResults = document.getElementById('search-results');
         searchInput.addEventListener('input', e => {
             const q = e.target.value.toLowerCase().trim();
             searchResults.innerHTML = '';
             if(!q) return searchResults.classList.add('hidden');
-            const f = globalAirports.filter(a => (a.name&&a.name.toLowerCase().includes(q)) || (a.iata&&a.iata.toLowerCase().includes(q))).slice(0, 5);
+            
+            const f = globalLocations.filter(a => a.searchTokens && a.searchTokens.includes(q)).slice(0, 8);
+            
             if(f.length>0) {
                 searchResults.classList.remove('hidden');
                 f.forEach(a => {
                     const li = document.createElement('li'); li.className = 'px-4 py-3 hover:bg-slate-700 cursor-pointer flex justify-between items-center';
-                    li.innerHTML = `<div class="flex items-center gap-3"><span class="text-slate-400">${planeSvg}</span><div class="flex flex-col"><span class="font-bold text-slate-200">${a.name}</span><span class="text-xs text-slate-400">${a.city||''}, ${a.country||''}</span></div></div><span class="text-xs font-bold text-blue-400 bg-blue-900/50 px-2 py-1 rounded">${a.iata||a.icao||'N/A'}</span>`;
-                    li.onclick = () => { const ll=L.latLng(a.lat,a.lon); map.flyTo(ll, Math.max(map.getZoom(), 8)); addWaypoint(ll); searchInput.value=''; searchResults.classList.add('hidden'); };
+                    const isLnd = a.type === 'landmark';
+                    li.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-slate-400">${isLnd ? starSvg : planeSvg}</span>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-200">${a.name}</span>
+                                <span class="text-xs text-slate-400">${isLnd ? a.desc : (a.city||'' + ', ' + (a.country||''))}</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold ${isLnd ? 'text-amber-400 bg-amber-900/50' : 'text-blue-400 bg-blue-900/50'} px-2 py-1 rounded">${isLnd ? 'LNDMK' : (a.iata||a.icao||'N/A')}</span>
+                    `;
+                    li.onclick = () => { const ll=L.latLng(a.lat,a.lon); map.flyTo(ll, Math.max(map.getZoom(), 10)); addWaypoint(ll); searchInput.value=''; searchResults.classList.add('hidden'); };
                     searchResults.appendChild(li);
                 });
             } else searchResults.classList.add('hidden');
         });
+        
         document.addEventListener('click', e => { if(!searchInput.contains(e.target) && !searchResults.contains(e.target)) searchResults.classList.add('hidden'); });
 
         const ctx = document.getElementById('context-menu');
         map.on('click', () => ctx.classList.add('hidden'));
         document.addEventListener('click', e => { if(!e.target.closest('.waypoint-marker') && !ctx.contains(e.target)) ctx.classList.add('hidden'); });
+
+        // Direct Radial Context Item
+        document.getElementById('cm-direct-point').onclick = () => {
+            ctx.classList.add('hidden');
+            directActiveIndex = activeWaypointIndex;
+            directStartLatLng = waypoints[directActiveIndex];
+            
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+            isDrawingDirect = true;
+            directLocked = false;
+            directAngle = 0; directDistance = 0;
+            
+            document.getElementById('map').classList.add('crosshair-cursor-map');
+            document.getElementById('ds-title').innerText = 'DIRECT RADIAL';
+            document.getElementById('ds-anchor-badge').classList.add('hidden');
+            
+            const lockBadge = document.getElementById('ds-lock-badge');
+            lockBadge.className = "text-[10px] font-bold bg-slate-500/20 text-slate-400 px-2 py-0.5 rounded border border-slate-500/30 uppercase";
+            lockBadge.innerText = 'Tab to Lock';
+            lockBadge.classList.remove('hidden');
+            
+            document.getElementById('ds-sweep-container').style.display = 'none';
+            document.getElementById('ds-pts-container').style.display = 'none';
+            
+            document.getElementById('draw-stats-overlay').classList.remove('hidden');
+            setTimeout(() => document.getElementById('draw-stats-overlay').classList.add('opacity-100'), 10);
+            
+            document.querySelector('.draw-tool-ui').style.display = 'flex';
+            document.getElementById('dt-rot').style.display = 'none';
+            document.getElementById('dt-scale').style.display = 'none';
+            document.getElementById('dt-sweep').style.display = 'none';
+            document.getElementById('dt-dir-inc').style.display = 'block';
+            
+            ghostEntryMarker.addTo(map);
+        };
 
         document.getElementById('cm-delete-point').onclick = () => { ctx.classList.add('hidden'); if(activeWaypointIndex>-1) { waypoints.splice(activeWaypointIndex, 1); renderRoute(); } };
         document.getElementById('cm-draw-hold').onclick = () => { ctx.classList.add('hidden'); drawHoldActiveIndex = activeWaypointIndex; document.getElementById('draw-menu-hold').classList.remove('hidden'); };
@@ -811,14 +1156,12 @@
             const contentBox = document.getElementById('ai-brief-content');
             dialog.classList.remove('hidden');
             
-            // Loading State
             contentBox.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-12">
                     <div class="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                     <span class="text-purple-300 font-semibold tracking-wide animate-pulse">Analyzing route telemetry and generating briefing...</span>
                 </div>`;
 
-            // Calculate route context
             const routeCoords = waypoints.map(w => `[${w.lat.toFixed(2)}, ${w.lng.toFixed(2)}]`).join(' -> ');
             let totalDistance = 0;
             if (waypoints.length > 1) {
@@ -826,26 +1169,25 @@
                     totalDistance += waypoints[i-1].distanceTo(waypoints[i]);
                 }
             }
-            totalDistance = totalDistance * 0.000621371; // meters to miles
+            totalDistance = totalDistance * 0.000621371; 
 
-            // Find closest known airports to provide geographic context
             let startLoc = "Unknown Geography", endLoc = "Unknown Geography";
-            if (globalAirports.length > 0) {
+            if (globalLocations.length > 0) {
                 const startWp = waypoints[0];
                 const endWp = waypoints[waypoints.length - 1];
                 
-                const closestStart = globalAirports.reduce((prev, curr) => {
+                const closestStart = globalLocations.reduce((prev, curr) => {
                     const dPrev = Math.pow(prev.lat - startWp.lat, 2) + Math.pow(prev.lon - startWp.lng, 2);
                     const dCurr = Math.pow(curr.lat - startWp.lat, 2) + Math.pow(curr.lon - startWp.lng, 2);
                     return dPrev < dCurr ? prev : curr;
                 });
-                const closestEnd = globalAirports.reduce((prev, curr) => {
+                const closestEnd = globalLocations.reduce((prev, curr) => {
                     const dPrev = Math.pow(prev.lat - endWp.lat, 2) + Math.pow(prev.lon - endWp.lng, 2);
                     const dCurr = Math.pow(curr.lat - endWp.lat, 2) + Math.pow(curr.lon - endWp.lng, 2);
                     return dPrev < dCurr ? prev : curr;
                 });
-                startLoc = `${closestStart.name} (${closestStart.iata || closestStart.icao || 'N/A'}) in ${closestStart.country || 'Unknown'}`;
-                endLoc = `${closestEnd.name} (${closestEnd.iata || closestEnd.icao || 'N/A'}) in ${closestEnd.country || 'Unknown'}`;
+                startLoc = `${closestStart.name} in ${closestStart.country || 'Unknown'}`;
+                endLoc = `${closestEnd.name} in ${closestEnd.country || 'Unknown'}`;
             }
 
             const promptText = `Please act as a professional AI Aviation Copilot and provide a pre-flight briefing for the following plotted flight plan.
@@ -869,10 +1211,8 @@ Use professional aviation terminology.`;
             };
 
             try {
-                // Call Gemini API
-                const apiKey = ""; 
+                const apiKey = ""; // Add key if needed for live testing
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -883,12 +1223,10 @@ Use professional aviation terminology.`;
                 
                 if (result.candidates && result.candidates[0].content.parts[0].text) {
                     let formattedText = result.candidates[0].content.parts[0].text;
-                    // Format markdown to HTML for the modal
                     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>');
                     formattedText = formattedText.replace(/\*(.*?)\*/g, '<em class="text-purple-300">$1</em>');
                     formattedText = formattedText.replace(/\n\n/g, '<br><br>');
                     formattedText = formattedText.replace(/\n/g, '<br>');
-                    
                     contentBox.innerHTML = formattedText;
                 } else {
                     contentBox.innerHTML = '<span class="text-red-400">Error: Received an unexpected response format from AI Copilot.</span>';
@@ -902,7 +1240,8 @@ Use professional aviation terminology.`;
         let tTimeout;
         function showNotification(msg, dur=2500) { toastMsg.innerText=msg; toast.style.opacity='1'; clearTimeout(tTimeout); tTimeout=setTimeout(()=>toast.style.opacity='0', dur); }
 
-        fetchAirports();
+        // Boot Databases immediately
+        fetchDatabases();
     </script>
 </body>
 </html>
