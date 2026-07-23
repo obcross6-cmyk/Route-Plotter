@@ -22,7 +22,7 @@
 
         /* HUD UI Panels */
         .hud-panel {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.88);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(148, 163, 184, 0.15);
@@ -107,7 +107,7 @@
         .dialog-btn:hover { transform: translateY(-1px); }
         .dialog-btn:active { transform: translateY(1px); }
         
-        input[type="text"], input[type="number"], select {
+        input[type="text"], input[type="number"], select, time {
             background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.3); color: white;
         }
         input:focus, select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
@@ -180,7 +180,7 @@
                     </div>
                 </div>
 
-                <div class="relative w-full lg:w-96">
+                <div class="relative w-full lg:w-80">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
@@ -188,21 +188,29 @@
                     <ul id="search-results" class="absolute w-full mt-2 hud-panel rounded-xl shadow-2xl hidden max-h-64 overflow-y-auto z-[2000] divide-y divide-slate-700/50"></ul>
                 </div>
                 
-                <button id="controls-btn" class="hidden lg:flex px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-semibold text-slate-300 transition-colors items-center gap-2 dialog-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
-                    Controls & Info
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="tot-btn" class="px-4 py-2.5 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/40 rounded-xl text-sm font-semibold text-purple-300 transition-colors flex items-center gap-2 dialog-btn shadow-lg shadow-purple-950/50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Flight Log & TOT
+                    </button>
+                    <button id="controls-btn" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-semibold text-slate-300 transition-colors flex items-center gap-2 dialog-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                        Controls & Info
+                    </button>
+                </div>
             </div>
 
             <div class="flex flex-col md:flex-row gap-3 items-stretch">
                 <div class="relative flex-grow group">
-                    <input type="text" id="route-output" class="w-full pl-4 pr-20 py-3 rounded-xl font-mono text-sm shadow-inner text-blue-300 bg-slate-900/80 border-slate-700 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="PASTE ROUTE STRING HERE OR CLICK MAP...">
-                    <div class="absolute inset-y-0 right-2 flex items-center">
+                    <input type="text" id="route-output" class="w-full pl-4 pr-32 py-3 rounded-xl font-mono text-sm shadow-inner text-blue-300 bg-slate-900/80 border-slate-700 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="PASTE ROUTE STRING HERE OR CLICK MAP...">
+                    <div class="absolute inset-y-0 right-2 flex items-center gap-1.5">
+                        <span id="dep-badge" class="hidden text-[9px] font-bold text-green-300 bg-green-950/80 px-1.5 py-0.5 rounded border border-green-700/50" title="Departure">DEP</span>
+                        <span id="arr-badge" class="hidden text-[9px] font-bold text-amber-300 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700/50" title="Arrival">ARR</span>
                         <span id="stats-badge" class="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-1 rounded border border-slate-600">0 WPT</span>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button id="copy-btn" class="px-5 py-3 bg-blue-600 hover:bg-blue-50 text-white rounded-xl font-semibold shadow-lg shadow-blue-900/50 flex items-center gap-2 dialog-btn">
+                    <button id="copy-btn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-900/50 flex items-center gap-2 dialog-btn">
                         <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" /><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" /></svg> Copy
                     </button>
                     <button id="undo-btn" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-xl font-semibold dialog-btn disabled:opacity-50">Undo</button>
@@ -226,30 +234,89 @@
         <button id="cm-delete-point" class="w-full text-left px-4 py-2 text-sm font-medium hover:bg-red-900/50 text-red-400 flex items-center gap-2"><span class="text-red-500">×</span> Delete Waypoint</button>
     </div>
 
+    <div id="tot-dialog" class="fixed inset-0 modal-overlay z-[6000] hidden flex items-center justify-center p-4">
+        <div class="hud-panel rounded-2xl p-6 w-full max-w-4xl max-h-[95vh] flex flex-col">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-700 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/50 flex items-center justify-center text-purple-400 font-bold">⏱️</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white tracking-tight">Flight Log & Time-Over-Target (TOT)</h3>
+                        <p class="text-xs text-slate-400">Calculates leg speeds, ETE, and cumulative ETAs.</p>
+                    </div>
+                </div>
+                <button class="close-modal text-slate-400 hover:text-white p-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Aircraft</label>
+                    <select id="tot-aircraft" class="w-full px-3 py-2 rounded-lg text-sm font-mono bg-slate-800 border-slate-700 text-white focus:border-blue-500 outline-none">
+                        <option value="">Custom...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Departure Time</label>
+                    <input type="time" id="tot-dep-time" value="09:00" class="w-full px-3 py-2 rounded-lg text-sm font-mono bg-slate-800 border-slate-700 text-white focus:border-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Speed (Knots)</label>
+                    <input type="number" id="tot-speed" value="120" min="10" max="2500" class="w-full px-3 py-2 rounded-lg text-sm font-mono bg-slate-800 border-slate-700 text-white focus:border-blue-500 outline-none">
+                </div>
+                <div class="flex items-end">
+                    <button id="tot-calc-btn" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-semibold text-sm shadow-lg transition-all">Calculate Plan</button>
+                </div>
+            </div>
+
+            <div id="tot-range-alert" class="hidden mb-4 p-3 rounded-xl text-sm font-bold items-center justify-between border shadow-inner"></div>
+
+            <div class="flex-grow overflow-y-auto rounded-xl border border-slate-800 mb-4 bg-slate-950/40">
+                <table class="w-full text-left border-collapse text-xs font-mono">
+                    <thead>
+                        <tr class="bg-slate-900 text-slate-400 border-b border-slate-800 sticky top-0">
+                            <th class="p-3">WPT</th>
+                            <th class="p-3">Coordinates</th>
+                            <th class="p-3">Leg Dist</th>
+                            <th class="p-3">Heading</th>
+                            <th class="p-3">ETE</th>
+                            <th class="p-3">ETA (UTC)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tot-table-body" class="divide-y divide-slate-800/60 text-slate-300">
+                        <!-- Populated Dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-slate-800">
+                <span id="tot-summary-stats">Total Route: 0.0 mi | Est. Total Time: 00:00</span>
+                <button class="close-modal px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold">Close Log</button>
+            </div>
+        </div>
+    </div>
+
     <div id="controls-dialog" class="fixed inset-0 modal-overlay z-[6000] hidden flex items-center justify-center p-4">
         <div class="hud-panel rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-white flex items-center gap-2">🕹️ Planner Controls</h3>
+                <h3 class="text-2xl font-bold text-white flex items-center gap-2">🕹️ Planner Controls & Changelog</h3>
                 <button class="close-modal text-slate-400 hover:text-white p-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                 <div>
-                    <h4 class="font-bold text-blue-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Basic Mapping</h4>
+                    <h4 class="font-bold text-blue-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Basic Mapping & Paster</h4>
                     <ul class="space-y-2 text-slate-300">
                         <li><b class="text-white">Left Click Map:</b> Place waypoint</li>
-                        <li><b class="text-white">Middle Click Map:</b> Drop waypoint freely (even while measuring)</li>
-                        <li><b class="text-white">Right Click Waypoint:</b> Open context menu OR snap active Compass/Ruler</li>
-                        <li><b class="text-white">Drag Map:</b> Pan view</li>
-                        <li><b class="text-white">Paste Route:</b> Paste coordinate strings (e.g. 530642N0003943W) to import!</li>
+                        <li><b class="text-white">Middle Click Map:</b> Drop waypoint freely (even with ruler/compass open)</li>
+                        <li><b class="text-white">Right Click Waypoint:</b> Open context menu OR snap active Compass/Ruler start</li>
+                        <li><b class="text-white">Paste Route String:</b> Paste DDMMSS coordinates (e.g. 530642N0003943W) and press Enter to import route!</li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold text-orange-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Drawing Setup</h4>
+                    <h4 class="font-bold text-orange-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Drawing Setup & Direct Radial</h4>
                     <ul class="space-y-2 text-slate-300">
-                        <li><b class="text-white">Start Drawing:</b> Right-click waypoint -> Select mode</li>
+                        <li><b class="text-white">Start Drawing:</b> Right-click waypoint -> Select mode or Direct Radial</li>
                         <li><b class="text-white">Anchoring:</b> Shapes automatically stick to the selected waypoint.</li>
                         <li><b class="text-white">Backspace / Delete:</b> Detach shape from waypoint so it follows mouse freely.</li>
-                        <li><b class="text-white">Direct Radial (Tab):</b> Press Tab to lock heading. Arrow keys adjust.</li>
+                        <li><b class="text-white">Tab Key:</b> Lock heading angle in Direct Radial mode.</li>
                     </ul>
                 </div>
                 <div>
@@ -258,15 +325,15 @@
                         <li><b class="text-white">Left Click:</b> Stamp shape to map</li>
                         <li><b class="text-white">Scroll Wheel:</b> Rotate heading</li>
                         <li><b class="text-white">Ctrl + Scroll:</b> Scale / Change Distance</li>
-                        <li><b class="text-white">Shift + Scroll:</b> Zoom map in/out</li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold text-pink-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Drawing Controls (Keys)</h4>
+                    <h4 class="font-bold text-pink-400 mb-2 uppercase tracking-wider text-xs border-b border-slate-700 pb-1">Latest Update Changelog</h4>
                     <ul class="space-y-2 text-slate-300">
-                        <li><b class="text-white">Up / Down Arrows:</b> Fine-tune Resolution Points by ±1 point (or adjust Radial Angle)</li>
-                        <li><b class="text-white">Left / Right Arrows:</b> Adjust Sweep Angle (Turns only) or adjust Radial Angle.</li>
-                        <li><b class="text-white">Escape:</b> Cancel drawing mode</li>
+                        <li><b class="text-green-400">NEW: Time-Over-Target (TOT) & Flight Log</b> with speed and ETA calculations.</li>
+                        <li><b class="text-green-400">NEW: Route Origin & Destination badges</b> in the telemetry toolbar.</li>
+                        <li><b class="text-green-400">Fixed:</b> Middle-click dropping points with active tools.</li>
+                        <li><b class="text-green-400">Fixed:</b> Direct Radial angle locking & increment toggle (`45°` to `1°`).</li>
                     </ul>
                 </div>
             </div>
@@ -313,32 +380,22 @@
         </div>
     </div>
 
-    <div id="ai-brief-dialog" class="fixed inset-0 modal-overlay z-[6000] hidden flex items-center justify-center p-4">
-        <div class="hud-panel rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-700/80 pb-3">
-                <h3 class="text-xl font-bold text-white flex items-center gap-2"><span class="text-purple-400">✨</span> AI Flight Briefing</h3>
-                <button class="close-modal text-slate-400 hover:text-white p-1 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-                    <button class="shape-btn px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-sm text-slate-200" data-mode="special" data-shape="sector">Sector Search</button>
-                    <button class="shape-btn px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium text-sm text-slate-200 col-span-2" data-mode="special" data-shape="star">Star Pattern</button>
-                </div>
-            </div>
-        </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const routeOutput = document.getElementById('route-output');
         const statsBadge = document.getElementById('stats-badge');
+        const depBadge = document.getElementById('dep-badge');
+        const arrBadge = document.getElementById('arr-badge');
         const toast = document.getElementById('toast');
         const toastMsg = document.getElementById('toast-msg');
         
         let activeWaypointIndex = -1; 
         let waypoints = []; 
         let markers = [];
-        let segmentLabels = []; // Array to store distance/heading text labels along the lines
+        let segmentLabels = [];
         let routePolyline = null; 
 
-        // Map Setup (Keyboard disabled to fix arrow key panning issue)
+        // Map Setup (keyboard disabled to prevent map panning on arrow keys)
         const map = L.map('map', { zoomControl: false, keyboard: false }).setView([53.1, -1.5], 6);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -351,7 +408,7 @@
 
         routePolyline = L.polyline([], { color: '#60a5fa', weight: 3, opacity: 0.9, dashArray: '10, 10', lineJoin: 'round' }).addTo(map);
 
-        // --- STREAMING_CHUNK: Integrating Airports and Landmarks APIs ---
+        // --- STREAMING_CHUNK: Airports & Landmarks API Failsafe Engine ---
         const planeSvg = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M22 16.41v-3.41l-10-6.41v-4.59c0-1.1-.9-2-2-2s-2 .9-2 2v4.59l-10 6.41v3.41l10-3.14v5.18l-2.59 1.95v2.59l4.59-1.36 4.59 1.36v-2.59l-2.59-1.95v-5.18l10 3.14z"/></svg>`;
         const airportIcon = L.divIcon({ html: planeSvg, className: 'airport-icon', iconSize: [24,24], iconAnchor: [12,12] });
         
@@ -361,7 +418,6 @@
         let globalLocations = [];
         const locationLayer = L.layerGroup().addTo(map);
 
-        // Hardcode Freedom's Wings specifically as requested
         globalLocations.push({
             name: "On Freedom's Wings (Lancaster Memorial)",
             lat: 53.1118, lon: -0.6622,
@@ -370,11 +426,7 @@
             searchTokens: "freedom wings lancaster bomber memorial norton disney a46"
         });
 
-        // Dual Failsafe Database fetching
         async function fetchDatabases() {
-            showNotification('Connecting to Global Aviation Databases...', 3000);
-            
-            // 1. Fetch Airports (Failsafe 1)
             try {
                 const resAirports = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
                 if(resAirports.ok) {
@@ -391,14 +443,9 @@
                 console.warn("Airports database offline.", err);
             }
 
-            // 2. Fetch Landmarks (Failsafe 2 - Robust Overpass API request)
             try {
-                // nwr catches nodes, ways, and relations. out center calculates the middle of the ways.
                 const query = `[out:json][timeout:25];(nwr["historic"="aircraft"];nwr["tourism"="museum"]["museum"="aviation"];nwr["aeroway"="aerodrome"]["historic"="yes"];);out center 300;`;
-                const url = `https://overpass-api.de/api/interpreter`;
-                
-                // Using POST is more robust for Overpass
-                const resLandmarks = await fetch(url, {
+                const resLandmarks = await fetch('https://overpass-api.de/api/interpreter', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `data=${encodeURIComponent(query)}`
@@ -408,10 +455,8 @@
                     const landmarkData = await resLandmarks.json();
                     if(landmarkData && landmarkData.elements) {
                         landmarkData.elements.forEach(el => {
-                            // Extract lat/lon safely whether it's a node or a way (center)
                             const lat = el.lat || (el.center && el.center.lat);
                             const lon = el.lon || (el.center && el.center.lon);
-                            
                             if (lat && lon) {
                                 const name = (el.tags && el.tags.name) || (el.tags && el.tags.historic === 'aircraft' ? "Historic Aircraft Display" : "Aviation Landmark");
                                 globalLocations.push({
@@ -426,8 +471,6 @@
             } catch (err) {
                 console.warn("Landmarks database offline.", err);
             }
-            
-            showNotification(`System Ready: ${globalLocations.length.toLocaleString()} Airports & Landmarks Loaded.`, 4000);
             renderLocations();
         }
         
@@ -446,7 +489,7 @@
         }
         map.on('moveend', renderLocations);
 
-        // --- STREAMING_CHUNK: Waypoint & Route String Logic ---
+        // --- STREAMING_CHUNK: Route String Parser & Telemetry Engine ---
         function convertToDMS(decimal, isLat) {
             let dir = isLat ? (decimal >= 0 ? 'N' : 'S') : (decimal >= 0 ? 'E' : 'W');
             let abs = Math.abs(decimal), deg = Math.floor(abs), mf = (abs - deg) * 60;
@@ -459,7 +502,6 @@
             const w = latlng.wrap(); return convertToDMS(w.lat, true) + convertToDMS(w.lng, false);
         }
 
-        // Two-way Route Decoder (Decode DDMMSSN DDDMMSSW)
         function parseRouteString(routeStr) {
             const regex = /(\d{2})(\d{2})(\d{2})([NS])(\d{3})(\d{2})(\d{2})([EW])/g;
             let match;
@@ -497,17 +539,13 @@
             }
         });
 
-        // --- STREAMING_CHUNK: Line Segment Labeling Math ---
         function renderRoute() {
-            // Clean up previous markers and labels
             markers.forEach(m => map.removeLayer(m)); markers = [];
             segmentLabels.forEach(l => map.removeLayer(l)); segmentLabels = [];
             
-            // Draw waypoints
             waypoints.forEach((wp, i) => {
                 const m = L.marker(wp, { icon: L.divIcon({className: 'custom-div-icon', html: `<div class="waypoint-marker">${i + 1}</div>`, iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(map);
                 m.on('contextmenu', e => {
-                    // Snap Compass or Ruler start to this marker if active
                     if (compassActive) {
                         L.DomEvent.stopPropagation(e); e.originalEvent.preventDefault();
                         compassStart = wp;
@@ -532,29 +570,23 @@
                 markers.push(m);
             });
             
-            // Calculate and draw line labels (Distance & Angle)
             for(let i = 0; i < waypoints.length - 1; i++) {
                 let wp1 = waypoints[i];
                 let wp2 = waypoints[i+1];
-                
-                // Distance in Miles
                 let dist = (wp1.distanceTo(wp2) * 0.000621371).toFixed(1);
                 
-                // Bearing in Degrees
                 const toRad = Math.PI/180;
                 const dLon = (wp2.lng-wp1.lng)*toRad;
                 const y = Math.sin(dLon)*Math.cos(wp2.lat*toRad);
                 const x = Math.cos(wp1.lat*toRad)*Math.sin(wp2.lat*toRad) - Math.sin(wp1.lat*toRad)*Math.cos(wp2.lat*toRad)*Math.cos(dLon);
                 const brg = Math.round((Math.atan2(y, x)*(180/Math.PI)+360)%360);
                 
-                // Midpoint for the label
                 let midLat = (wp1.lat + wp2.lat) / 2;
                 let midLng = (wp1.lng + wp2.lng) / 2;
                 
-                // Create custom label
                 let labelMarker = L.marker([midLat, midLng], {
                     icon: L.divIcon({
-                        className: 'bg-transparent border-none', // Override Leaflet defaults
+                        className: 'bg-transparent border-none',
                         html: `<div class="flex justify-center items-center pointer-events-none w-[100px] h-[20px]">
                                 <div class="bg-slate-900/90 text-slate-200 text-[10px] font-mono px-2 py-0.5 rounded-md border border-slate-700 backdrop-blur-md shadow-lg whitespace-nowrap flex items-center">
                                     <span class="text-green-400 font-bold">${dist}</span><span class="text-slate-400 text-[9px] mr-1.5 ml-0.5">mi</span>
@@ -563,9 +595,9 @@
                                 </div>
                                </div>`,
                         iconSize: [100, 20],
-                        iconAnchor: [50, 10] // Center perfectly
+                        iconAnchor: [50, 10]
                     }),
-                    interactive: false // Don't block clicks to map or tools underneath!
+                    interactive: false
                 }).addTo(map);
                 
                 segmentLabels.push(labelMarker);
@@ -579,13 +611,21 @@
             }
             
             statsBadge.innerText = `${waypoints.length} WPT`;
+            if(waypoints.length > 0) {
+                depBadge.classList.remove('hidden');
+                arrBadge.classList.remove('hidden');
+            } else {
+                depBadge.classList.add('hidden');
+                arrBadge.classList.add('hidden');
+            }
+
             document.getElementById('undo-btn').disabled = !waypoints.length;
             document.getElementById('clear-btn').disabled = !waypoints.length;
         }
 
         function addWaypoint(latlng) { waypoints.push(latlng); renderRoute(); }
 
-        // --- STREAMING_CHUNK: Compass & Ruler Tools ---
+        // --- STREAMING_CHUNK: Compass & Ruler Tools with Click Propagation Fix ---
         let compassActive = false, rulerActive = false, compassStart = null, rulerStart = null;
         let compassLine = L.polyline([], {color: '#ef4444', weight: 3, dashArray: '6, 6'}).addTo(map);
         let rulerLine = L.polyline([], {color: '#10b981', weight: 3, dashArray: '6, 6'}).addTo(map);
@@ -630,14 +670,13 @@
             else { btn.classList.remove('active-ruler'); document.getElementById('map').classList.remove('crosshair-cursor-map'); rulerStart = null; rulerLine.setLatLngs([]); rulerTooltipMarker.unbindTooltip(); }
         }
 
-        // --- STREAMING_CHUNK: Advanced Drawing System & Math Engine ---
+        // --- STREAMING_CHUNK: Advanced Drawing System & Direct Radial Engine ---
         let isDrawingHold = false, isPrompting = false;
         let drawHoldParams = { mode: 'hold', shape: 'capsule', dist: 10, angle: 90, loops: 1, points: 40, sweep: 90 };
         let drawHoldActiveIndex = -1;
         let lastMouseLatLng = null, pendingAnchorLatLng = null;
         let isSnappedToWaypoint = false, snappedLatLng = null;
         
-        // Direct Radial State
         let isDrawingDirect = false;
         let directLocked = false;
         let directAngle = 0;
@@ -658,18 +697,24 @@
             options: { position: 'topright' },
             onAdd: function() {
                 const container = L.DomUtil.create('div', 'draw-tool-ui hidden flex-col gap-1 mt-2');
+                
+                L.DomEvent.disableClickPropagation(container);
+                L.DomEvent.disableScrollPropagation(container);
+
                 const btnR = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg', container); btnR.id = 'dt-rot'; btnR.innerHTML = `⟳ ${rotateIncrements[rotIdx]}°`;
                 const btnS = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg', container); btnS.id = 'dt-scale'; btnS.innerHTML = `⤢ ${scaleIncrements[scaleIdx]}mi`;
                 const btnSw = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg hidden', container); btnSw.id = 'dt-sweep'; btnSw.innerHTML = `∡ ${sweepIncrements[sweepIdx]}°`;
                 const btnDirInc = L.DomUtil.create('button', 'map-tool-btn draw-inc bg-slate-800 shadow-lg hidden', container); btnDirInc.id = 'dt-dir-inc'; btnDirInc.innerHTML = `∡ ${directIncrements[directIncIdx]}°`;
                 
-                L.DomEvent.disableClickPropagation(container);
-                L.DomEvent.disableScrollPropagation(container);
-                
                 L.DomEvent.on(btnR, 'click', e => { e.preventDefault(); rotIdx = (rotIdx+1)%rotateIncrements.length; btnR.innerHTML = `⟳ ${rotateIncrements[rotIdx]}°`; });
                 L.DomEvent.on(btnS, 'click', e => { e.preventDefault(); scaleIdx = (scaleIdx+1)%scaleIncrements.length; btnS.innerHTML = `⤢ ${scaleIncrements[scaleIdx]}mi`; });
                 L.DomEvent.on(btnSw, 'click', e => { e.preventDefault(); sweepIdx = (sweepIdx+1)%sweepIncrements.length; btnSw.innerHTML = `∡ ${sweepIncrements[sweepIdx]}°`; });
-                L.DomEvent.on(btnDirInc, 'click', e => { e.preventDefault(); directIncIdx = (directIncIdx+1)%directIncrements.length; btnDirInc.innerHTML = `∡ ${directIncrements[directIncIdx]}°`; });
+                L.DomEvent.on(btnDirInc, 'click', e => { 
+                    e.preventDefault(); 
+                    directIncIdx = (directIncIdx+1)%directIncrements.length; 
+                    btnDirInc.innerHTML = `∡ ${directIncrements[directIncIdx]}°`;
+                    showNotification(`Angle increment changed to ±${directIncrements[directIncIdx]}°`);
+                });
                 return container;
             }
         });
@@ -733,9 +778,8 @@
         const milesToDeg = 1 / 69.05;
         function getScale(lat) { const c = Math.cos(lat * Math.PI/180); return c === 0 ? 1 : 1/c; }
 
-        // Core Dest Point Math for Direct Radial
         function computeDestinationPoint(start, distanceMiles, bearingDeg) {
-            const R = 3958.8; // Earth radius in miles
+            const R = 3958.8;
             const lat1 = start.lat * Math.PI / 180;
             const lon1 = start.lng * Math.PI / 180;
             const brng = bearingDeg * Math.PI / 180;
@@ -745,7 +789,6 @@
             return L.latLng(lat2 * 180 / Math.PI, lon2 * 180 / Math.PI);
         }
 
-        // --- PATH RESAMPLING ENGINE ---
         function resamplePath(latlngs, numPoints) {
             if (numPoints <= 1) return [latlngs[0]];
             if (latlngs.length === 0) return [];
@@ -880,7 +923,7 @@
             updateDrawStatsUI();
         }
 
-        // --- STREAMING_CHUNK: Event Listeners & Drawing Input ---
+        // --- STREAMING_CHUNK: Mouse and Keyboard Event Handlers ---
         map.on('mousemove', e => {
             if(compassActive && compassStart) {
                 compassLine.setLatLngs([compassStart, e.latlng]);
@@ -938,7 +981,6 @@
             if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             if(e.key === 'Escape') { exitDrawMode(); return; }
             
-            // Direct Radial Angle Locking & Arrow Keys
             if (isDrawingDirect) {
                 if (e.key === 'Tab') {
                     e.preventDefault();
@@ -989,7 +1031,6 @@
             }
         });
 
-        // Click Handler & Prompt Logic
         const pDialog = document.getElementById('action-prompt-dialog');
         const pInput = document.getElementById('ap-input');
         
@@ -1028,13 +1069,13 @@
             } else { addWaypoint(e.latlng); }
         });
 
-        // Middle-Click bypasses tools to drop a waypoint seamlessly
+        // Middle-click drops waypoint without closing ruler/compass
         document.getElementById('map').addEventListener('mousedown', function(e) {
             if (e.button === 1) { e.preventDefault(); }
         });
         
         map.on('mousedown', e => {
-            if (e.originalEvent.button === 1) { // Middle click
+            if (e.originalEvent.button === 1) {
                 e.originalEvent.preventDefault();
                 addWaypoint(e.latlng);
             }
@@ -1058,7 +1099,149 @@
             pDialog.classList.add('hidden'); isPrompting = false; pendingAnchorLatLng = null;
         });
 
-        // --- STREAMING_CHUNK: Search, Menus, and AI ---
+        // --- STREAMING_CHUNK: Time-Over-Target (TOT) Engine ---
+        const aircraftDB = [
+            // General Aviation
+            {n: "Cessna 152", r: 414, s: 107}, {n: "Cessna 172 Skyhawk", r: 696, s: 122}, {n: "Cessna 182 Skylane", r: 930, s: 145}, {n: "Cessna 208 Caravan", r: 1080, s: 186},
+            {n: "Cirrus SR22", r: 1049, s: 183}, {n: "Piper PA-28 Cherokee", r: 840, s: 123}, {n: "Piper PA-44 Seminole", r: 700, s: 162}, {n: "Diamond DA40", r: 940, s: 137},
+            {n: "Diamond DA62", r: 1283, s: 192}, {n: "Beechcraft Bonanza G36", r: 920, s: 176}, {n: "Beechcraft Baron G58", r: 1480, s: 202}, {n: "Mooney M20 Acclaim", r: 1445, s: 242},
+            // Business Jets & Turboprops
+            {n: "Pilatus PC-12", r: 1845, s: 285}, {n: "King Air 350i", r: 1806, s: 312}, {n: "TBM 940", r: 1730, s: 330}, {n: "Citation Mustang", r: 1167, s: 340},
+            {n: "Citation X+", r: 3460, s: 528}, {n: "Gulfstream G550", r: 6750, s: 488}, {n: "Gulfstream G650ER", r: 7500, s: 516}, {n: "Global 7500", r: 7700, s: 516},
+            {n: "Challenger 350", r: 3200, s: 450}, {n: "Phenom 300E", r: 2010, s: 453}, {n: "Falcon 8X", r: 6450, s: 488}, {n: "HondaJet HA-420", r: 1223, s: 422},
+            // Commercial Narrowbody
+            {n: "Airbus A220-300", r: 3400, s: 447}, {n: "Airbus A319neo", r: 3750, s: 450}, {n: "Airbus A320neo", r: 3400, s: 450}, {n: "Airbus A321XLR", r: 4700, s: 450},
+            {n: "Boeing 737-700", r: 3010, s: 453}, {n: "Boeing 737-800", r: 2935, s: 453}, {n: "Boeing 737 MAX 8", r: 3550, s: 453}, {n: "Boeing 757-200", r: 3915, s: 460},
+            {n: "Embraer E175", r: 2140, s: 445}, {n: "Embraer E190-E2", r: 2850, s: 450}, {n: "CRJ700", r: 1400, s: 444}, {n: "CRJ900", r: 1550, s: 444},
+            // Commercial Widebody
+            {n: "Airbus A330-900neo", r: 7200, s: 496}, {n: "Airbus A350-900", r: 8300, s: 488}, {n: "Airbus A350-1000", r: 8700, s: 488}, {n: "Airbus A380-800", r: 8000, s: 490},
+            {n: "Boeing 747-400", r: 7260, s: 493}, {n: "Boeing 747-8I", r: 7730, s: 493}, {n: "Boeing 767-300ER", r: 5980, s: 461}, {n: "Boeing 777-200LR", r: 8555, s: 484},
+            {n: "Boeing 777-300ER", r: 7370, s: 484}, {n: "Boeing 787-8 Dreamliner", r: 7305, s: 488}, {n: "Boeing 787-9 Dreamliner", r: 7530, s: 488},
+            // Turboprop Regional
+            {n: "ATR 42-600", r: 716, s: 289}, {n: "ATR 72-600", r: 825, s: 275}, {n: "Dash 8-Q400", r: 1110, s: 360}, {n: "Saab 340", r: 935, s: 283},
+            // Military Fighters & Attack
+            {n: "F-16C Fighting Falcon", r: 2000, s: 500}, {n: "F-15E Strike Eagle", r: 2400, s: 500}, {n: "F-22 Raptor", r: 1839, s: 530}, {n: "F-35A Lightning II", r: 1200, s: 520},
+            {n: "F/A-18F Super Hornet", r: 1275, s: 510}, {n: "A-10 Thunderbolt II", r: 800, s: 300}, {n: "Eurofighter Typhoon", r: 1800, s: 500}, {n: "Dassault Rafale", r: 2000, s: 490},
+            {n: "Saab JAS 39 Gripen", r: 1739, s: 500}, {n: "Su-27 Flanker", r: 1910, s: 520}, {n: "MiG-29 Fulcrum", r: 888, s: 500}, {n: "Panavia Tornado", r: 870, s: 470},
+            // Military Strategic & Transport
+            {n: "B-52H Stratofortress", r: 8800, s: 442}, {n: "B-1B Lancer", r: 5100, s: 485}, {n: "B-2 Spirit", r: 6000, s: 487}, {n: "C-130J Super Hercules", r: 3300, s: 348},
+            {n: "C-17 Globemaster III", r: 5200, s: 450}, {n: "C-5M Super Galaxy", r: 4800, s: 460}, {n: "A400M Atlas", r: 4800, s: 422}, {n: "KC-135 Stratotanker", r: 1300, s: 460},
+            {n: "A330 MRTT", r: 8000, s: 465}, {n: "P-8 Poseidon", r: 4500, s: 440}, {n: "U-2 Dragon Lady", r: 3000, s: 410}, {n: "E-3 Sentry (AWACS)", r: 4000, s: 460},
+            // Helicopters & VTOL
+            {n: "AH-64 Apache", r: 257, s: 143}, {n: "UH-60 Black Hawk", r: 320, s: 150}, {n: "CH-47F Chinook", r: 400, s: 170}, {n: "V-22 Osprey", r: 879, s: 277},
+            {n: "Bell 206 JetRanger", r: 374, s: 110}, {n: "Bell 412EP", r: 402, s: 122}, {n: "AW139", r: 573, s: 165}, {n: "Airbus H145", r: 345, s: 130},
+            {n: "Robinson R22", r: 250, s: 96}, {n: "Robinson R44", r: 300, s: 109}, {n: "Sikorsky S-92", r: 539, s: 151},
+            // Historic & Warbirds
+            {n: "Supermarine Spitfire", r: 434, s: 240}, {n: "Hawker Hurricane", r: 480, s: 215}, {n: "Avro Lancaster", r: 2530, s: 175}, {n: "B-17 Flying Fortress", r: 2000, s: 160},
+            {n: "P-51D Mustang", r: 1650, s: 315}, {n: "F4U Corsair", r: 1005, s: 257}, {n: "A6M Zero", r: 1675, s: 205}, {n: "Messerschmitt Bf 109", r: 528, s: 305},
+            {n: "Douglas DC-3 (C-47)", r: 1500, s: 170}, {n: "Concorde", r: 3900, s: 1150}, {n: "SR-71 Blackbird", r: 2900, s: 1750},
+            // UAVs
+            {n: "MQ-9 Reaper", r: 1150, s: 170}, {n: "RQ-4 Global Hawk", r: 12300, s: 310}, {n: "TB2 Bayraktar", r: 150, s: 70}
+        ].sort((a, b) => a.n.localeCompare(b.n));
+
+        const totAircraftSelect = document.getElementById('tot-aircraft');
+        aircraftDB.forEach((ac, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx; opt.innerText = ac.n;
+            totAircraftSelect.appendChild(opt);
+        });
+
+        totAircraftSelect.addEventListener('change', (e) => {
+            if(e.target.value !== "") {
+                const ac = aircraftDB[e.target.value];
+                document.getElementById('tot-speed').value = ac.s;
+                calculateFlightLog();
+            } else {
+                document.getElementById('tot-range-alert').classList.add('hidden');
+            }
+        });
+
+        function calculateFlightLog() {
+            const depTimeStr = document.getElementById('tot-dep-time').value || "09:00";
+            const cruiseSpeed = parseFloat(document.getElementById('tot-speed').value) || 120;
+            const tableBody = document.getElementById('tot-table-body');
+            tableBody.innerHTML = '';
+
+            if(waypoints.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No waypoints plotted yet. Add points to calculate TOT.</td></tr>`;
+                document.getElementById('tot-summary-stats').innerText = "Total Route: 0.0 mi | Est. Total Time: 00:00";
+                return;
+            }
+
+            let [depHours, depMins] = depTimeStr.split(':').map(Number);
+            let totalMinutes = depHours * 60 + depMins;
+            let cumulativeDist = 0;
+
+            waypoints.forEach((wp, i) => {
+                let legDist = 0;
+                let legHeading = 0;
+                let eteMins = 0;
+
+                if(i > 0) {
+                    let prevWp = waypoints[i-1];
+                    legDist = prevWp.distanceTo(wp) * 0.000621371; // miles
+                    cumulativeDist += legDist;
+
+                    const toRad = Math.PI/180;
+                    const dLon = (wp.lng - prevWp.lng) * toRad;
+                    const y = Math.sin(dLon) * Math.cos(wp.lat * toRad);
+                    const x = Math.cos(prevWp.lat * toRad) * Math.sin(wp.lat * toRad) - Math.sin(prevWp.lat * toRad) * Math.cos(wp.lat * toRad) * Math.cos(dLon);
+                    legHeading = Math.round((Math.atan2(y, x) * (180/Math.PI) + 360) % 360);
+
+                    eteMins = (legDist / cruiseSpeed) * 60;
+                    totalMinutes += eteMins;
+                }
+
+                let arrHours = Math.floor(totalMinutes / 60) % 24;
+                let arrMins = Math.round(totalMinutes % 60);
+                let timeStr = `${String(arrHours).padStart(2,'0')}:${String(arrMins).padStart(2,'0')} UTC`;
+
+                let eteStr = i === 0 ? "START" : `${Math.floor(eteMins)}m ${Math.round((eteMins%1)*60)}s`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/60";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-blue-400">#${i+1}</td>
+                    <td class="p-3 text-slate-300">${formatCoordinate(wp)}</td>
+                    <td class="p-3 text-green-400">${legDist.toFixed(1)} mi</td>
+                    <td class="p-3 text-orange-400">${i === 0 ? '-' : legHeading + '°'}</td>
+                    <td class="p-3 text-slate-400">${eteStr}</td>
+                    <td class="p-3 font-bold text-purple-300">${timeStr}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            let totalHours = Math.floor((cumulativeDist / cruiseSpeed) * 60 / 60);
+            let totalMins = Math.round(((cumulativeDist / cruiseSpeed) * 60) % 60);
+            document.getElementById('tot-summary-stats').innerText = `Total Route: ${cumulativeDist.toFixed(1)} mi | Est. Enroute Time: ${totalHours}h ${totalMins}m`;
+
+            // Display Aircraft Range Check
+            const rangeAlert = document.getElementById('tot-range-alert');
+            const acSelectVal = document.getElementById('tot-aircraft').value;
+            if(acSelectVal !== "") {
+                const ac = aircraftDB[acSelectVal];
+                rangeAlert.classList.remove('hidden');
+                rangeAlert.style.display = 'flex';
+                if(cumulativeDist <= ac.r) {
+                    rangeAlert.className = "mb-4 p-3 rounded-xl text-sm font-bold flex items-center justify-between border shadow-inner border-green-500/50 bg-green-900/30 text-green-400";
+                    rangeAlert.innerHTML = `<span class="flex items-center gap-2">✅ <span class="text-white">${ac.n}</span> is within operational range.</span> <span class="font-mono bg-green-950/50 px-2 py-1 rounded">${cumulativeDist.toFixed(1)} mi / ${ac.r} mi Max</span>`;
+                } else {
+                    rangeAlert.className = "mb-4 p-3 rounded-xl text-sm font-bold flex items-center justify-between border shadow-inner border-red-500/50 bg-red-900/30 text-red-400";
+                    rangeAlert.innerHTML = `<span class="flex items-center gap-2">❌ <span class="text-white">${ac.n}</span> is OUT OF RANGE!</span> <span class="font-mono bg-red-950/50 px-2 py-1 rounded">${cumulativeDist.toFixed(1)} mi / ${ac.r} mi Max</span>`;
+                }
+            } else {
+                rangeAlert.classList.add('hidden');
+                rangeAlert.style.display = 'none';
+            }
+        }
+
+        document.getElementById('tot-btn').onclick = () => {
+            calculateFlightLog();
+            document.getElementById('tot-dialog').classList.remove('hidden');
+        };
+        document.getElementById('tot-calc-btn').onclick = calculateFlightLog;
+
+        // --- STREAMING_CHUNK: Search & Context Menu Handlers ---
         const searchInput = document.getElementById('airport-search'), searchResults = document.getElementById('search-results');
         searchInput.addEventListener('input', e => {
             const q = e.target.value.toLowerCase().trim();
@@ -1094,7 +1277,6 @@
         map.on('click', () => ctx.classList.add('hidden'));
         document.addEventListener('click', e => { if(!e.target.closest('.waypoint-marker') && !ctx.contains(e.target)) ctx.classList.add('hidden'); });
 
-        // Direct Radial Context Item
         document.getElementById('cm-direct-point').onclick = () => {
             ctx.classList.add('hidden');
             directActiveIndex = activeWaypointIndex;
@@ -1145,7 +1327,6 @@
         let tTimeout;
         function showNotification(msg, dur=2500) { toastMsg.innerText=msg; toast.style.opacity='1'; clearTimeout(tTimeout); tTimeout=setTimeout(()=>toast.style.opacity='0', dur); }
 
-        // Boot Databases immediately
         fetchDatabases();
     </script>
 </body>
